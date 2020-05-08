@@ -4,8 +4,6 @@ https://www.graphviz.org/
 # Python standard library
 from collections import Counter, defaultdict
 import itertools
-from functools import reduce
-import operator
 from random import choice
 # External packages
 import networkx as nx
