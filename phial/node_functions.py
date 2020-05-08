@@ -10,14 +10,28 @@ Functions should NOT ASSUME a specific number of values in inputstates.
 """
 from functools import reduce
 import operator
+import sys, inspect
 
 # TODO:
 #  decorator that adds attribute to func indicating how many inputs it handles
 #  decorator that adds attribute to func indicating how many states it can return
 
-def noop_func(inputstates):
-    """Ignore inputstates"""
-    return 0 # must return some state and we know there is at least one
+def and_func(inputstates):
+    """Logical AND"""
+    if len(inputstates) == 0:
+        return 0 # must return some state and we know there is at least one
+    invals = [v != 0 for v in inputstates]
+    return int(reduce(operator.and_, invals))
+
+# In published papers, COPY seems to assume exactly one in-edge
+def copy_func(inputstates):
+    """Copy single input"""
+    assert len(inputstates) <= 1, (
+        f"copy_func must have 0,1 inputs. Got {len(inputstates)}" )
+    if len(inputstates) == 0:
+        return 0 # must return some state and we know there is at least one
+    invals = [v != 0 for v in inputstates]
+    return int(reduce(operator.or_, invals))
 
 def ma_func(inputstates):
     """Mean Activation as state. Upto 15"""
@@ -32,64 +46,9 @@ def maz_func(inputstates):
         return 0 # must return some state and we know there is at least one
     return int((sum(inputstates)/len(inputstates)) > 0)
 
-def tri_func(inputstates):
-    """Count input states. Produces 3 states"""
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    if sum(inputstates) == 0:
-        return 0
-    if sum(inputstates) == 1:
-        return 1
-    else:
-        return 2
-
-def or_func(inputstates):
-    """Logical OR"""
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.or_, invals)    )
-
-def nor_func(inputstates):
-    """Logical Not-OR"""
-    return int(or_func(inputstates) == 0)
-
-# In published papers, COPY seems to assume exactly one in-edge
-def copy_func(inputstates):
-    """Copy single input"""
-    assert len(inputstates) <= 1, (
-        f"copy_func must have 0,1 inputs. Got {len(inputstates)}" )
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.or_, invals))
-
-def xor_func(inputstates):
-    """Logical XOR"""
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.xor, invals))
-
-def and_func(inputstates):
-    """Logical AND"""
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.and_, invals))
-
-def nand_func(inputstates):
-    """Logical Not-AND"""
-    return int(and_func(inputstates) == 0)
-
-def not_func(inputstates):
-    """Invert single input"""
-    assert len(inputstates) <= 1, (
-        f"not_func must have 0,1 inputs. Got {len(inputstates)}" )
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(inputstates[0] == 0)
+def min_func(inputstates):
+    """Minimum state of inputstates"""
+    return min(inputstates)
 
 def mj_func(inputstates):
     """Majority of inputs are non-zero"""
@@ -101,11 +60,70 @@ def mn_func(inputstates):
     return int(len([v for v in inputstates if v > 0]) <= len(inputstates)/2)
 minority_func=mn_func
 
-def min_func(inputstates):
-    """Minimum state of inputs"""
-    return min(inputstates)
+def nand_func(inputstates):
+    """Logical Not-AND"""
+    return int(and_func(inputstates) == 0)
+
+def noop_func(inputstates):
+    """Ignore inputstates"""
+    return 0 # must return some state and we know there is at least one
+
+def nor_func(inputstates):
+    """Logical Not-OR"""
+    return int(or_func(inputstates) == 0)
+
+def not_func(inputstates):
+    """Invert single input"""
+    assert len(inputstates) <= 1, (
+        f"not_func must have 0,1 inputs. Got {len(inputstates)}" )
+    if len(inputstates) == 0:
+        return 0 # must return some state and we know there is at least one
+    invals = [v != 0 for v in inputstates]
+    return int(inputstates[0] == 0)
+
+def or_func(inputstates):
+    """Logical OR"""
+    if len(inputstates) == 0:
+        return 0 # must return some state and we know there is at least one
+    invals = [v != 0 for v in inputstates]
+    return int(reduce(operator.or_, invals)    )
 
 def parity_func(inputstates):
+    """1 if sum of inputstates is odd"""
     return sum(inputstates) % 2
 
+def tri_func(inputstates):
+    """Count input states. Produces 3 states"""
+    if len(inputstates) == 0:
+        return 0 # must return some state and we know there is at least one
+    if sum(inputstates) == 0:
+        return 0
+    if sum(inputstates) == 1:
+        return 1
+    else:
+        return 2
+
+def xor_func(inputstates):
+    """Logical XOR"""
+    if len(inputstates) == 0:
+        return 0 # must return some state and we know there is at least one
+    invals = [v != 0 for v in inputstates]
+    return int(reduce(operator.xor, invals))
+
+##############################################################################
+
+# Map func_name to executable function
+funcLUT = dict(
+    (name.replace('_func',''),obj)
+    for name,obj in inspect.getmembers(sys.modules[__name__])
+    if (inspect.isfunction(obj) and name.endswith('_func')))
+# above allows:
+# nf.funcLUT['and'](inputs)  => 1
+
+
+# Sorted list of all the node func names in this file.
+node_functions = sorted(funcLUT.keys())
+# above allows:
+# import phial.node_functions as nf
+# func_names = nf.node_functions
 
