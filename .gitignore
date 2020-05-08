@@ -1,0 +1,31 @@
+pyphi.log
+pyphi_config.yml
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# local env, settings, workspsace etc
+.projectile
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/**/*
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+node_modules/
