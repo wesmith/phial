@@ -1,0 +1,17 @@
+{
+    "edges": [
+        ["A","B"],
+        ["A","C"],
+        ["B","A"],
+        ["B","C"],
+        ["C","A"],
+        ["C","B"]
+    ],
+    "funcs": {
+        "A": "OR",
+        "B": "AND",
+        "C": "XOR"
+    },
+    "title": "3-node bidirectional OR, XOR, AND",
+    "comment":  "Used in Mayner 2018 paper"
+}
