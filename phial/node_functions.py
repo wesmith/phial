@@ -107,7 +107,7 @@ def tri_func(inputstates):
 
     
 def xor_func(inputstates):
-    """Logical XOR.
+    """Logical XOR. Odd number of inputs is true.
     >>> xor_func([0,0])
     0
     >>> xor_func([1,1])
@@ -119,12 +119,13 @@ def xor_func(inputstates):
     >>> xor_func([1,1,0])
     0
     >>> xor_func([1,1,1])
-    0
+    1
     """
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
     nonzerovals = [v for v in inputstates if v > 0]
-    return int(len(nonzerovals) == 1)
+    return int(len(nonzerovals)%2 == 1)
+
 
 ##############################################################################
 
