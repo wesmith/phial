@@ -1,3 +1,7 @@
+# Execute doctests using:
+#   python3 node_functions.py  # reports nothing unless found errors
+# For verbose output:
+#   python3 node_functions.py 
 """Mechanisms (node-functions) for nodes.  
 Allows for non-binary state nodes.
 Each accepts the state from each of its immediately upstream nodes. 
@@ -142,3 +146,5 @@ node_functions = sorted(funcLUT.keys())
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
+
+    
