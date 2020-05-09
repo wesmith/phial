@@ -20,7 +20,7 @@ import sys, inspect
 #  decorator that adds attribute to func indicating how many inputs it handles
 #  decorator that adds attribute to func indicating how many states it can return
 
-def and_func(inputstates):
+def AND_func(inputstates):
     """Logical AND"""
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
@@ -28,73 +28,73 @@ def and_func(inputstates):
     return int(reduce(operator.and_, inputstates))
 
 # In published papers, COPY seems to assume exactly one in-edge
-def copy_func(inputstates):
+def COPY_func(inputstates):
     """Copy single input"""
     assert len(inputstates) <= 1, (
-        f"copy_func must have 0,1 inputs. Got {len(inputstates)}" )
+        f"COPY_func must have 0,1 inputs. Got {len(inputstates)}" )
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
     return int(reduce(operator.or_, inputstates))
 
-def ma_func(inputstates):
+def MA_func(inputstates):
     """Mean Activation as state. Upto 15"""
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
     return min(15, int(sum(inputstates)/len(inputstates)))
-copy_func = ma_func #  Indended to have exactly one input node. 
+COPY_func = MA_func #  Indended to have exactly one input node. 
 
-def maz_func(inputstates):
+def MAZ_func(inputstates):
     """Mean Activation gt zero"""
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
     return int((sum(inputstates)/len(inputstates)) > 0)
 
-def min_func(inputstates):
+def MIN_func(inputstates):
     """Minimum state of inputstates"""
     return min(inputstates)
 
-def mj_func(inputstates):
+def MJ_func(inputstates):
     """Majority of inputs are non-zero"""
     return int(len([v for v in inputstates if v > 0]) > len(inputstates)/2)
-majority_func=mj_func
+MAJORITY_func=MJ_func
 
-def mn_func(inputstates):
+def MN_func(inputstates):
     """Minority of inputs are non-zero"""
     return int(len([v for v in inputstates if v > 0]) <= len(inputstates)/2)
-minority_func=mn_func
+MINORITY_func=MN_func
 
-def nand_func(inputstates):
+def NAND_func(inputstates):
     """Logical Not-AND"""
-    return int(and_func(inputstates) == 0)
+    return int(AND_func(inputstates) == 0)
 
-def noop_func(inputstates):
+def NOOP_func(inputstates):
     """Ignore inputstates"""
     return 0 # must return some state and we know there is at least one
 
-def nor_func(inputstates):
+def NOR_func(inputstates):
     """Logical Not-OR"""
-    return int(or_func(inputstates) == 0)
+    return int(OR_func(inputstates) == 0)
 
-def not_func(inputstates):
+def NOT_func(inputstates):
     """Invert single input"""
     assert len(inputstates) <= 1, (
-        f"not_func must have 0,1 inputs. Got {len(inputstates)}" )
+        f"NOT_func must have 0,1 inputs. Got {len(inputstates)}" )
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
     return int(inputstates[0] == 0)
 
-def or_func(inputstates):
+def OR_func(inputstates):
     """Logical OR"""
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
     #invals = [v != 0 for v in inputstates]
     return int(reduce(operator.or_, inputstates))
 
-def parity_func(inputstates):
+def PARITY_func(inputstates):
     """1 if sum of inputstates is odd"""
     return sum(inputstates) % 2
 
-def tri_func(inputstates):
+def TRI_func(inputstates):
     """Count input states. Produces 3 states"""
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
@@ -106,19 +106,19 @@ def tri_func(inputstates):
         return 2
 
     
-def xor_func(inputstates):
+def XOR_func(inputstates):
     """Logical XOR. Odd number of inputs is true.
-    >>> xor_func([0,0])
+    >>> XOR_func([0,0])
     0
-    >>> xor_func([1,1])
+    >>> XOR_func([1,1])
     0
-    >>> xor_func([1,0])
+    >>> XOR_func([1,0])
     1
-    >>> xor_func([1,0,0])
+    >>> XOR_func([1,0,0])
     1
-    >>> xor_func([1,1,0])
+    >>> XOR_func([1,1,0])
     0
-    >>> xor_func([1,1,1])
+    >>> XOR_func([1,1,1])
     1
     """
     if len(inputstates) == 0:
@@ -135,7 +135,7 @@ funcLUT = dict(
     for name,obj in inspect.getmembers(sys.modules[__name__])
     if (inspect.isfunction(obj) and name.endswith('_func')))
 # above allows:
-# nf.funcLUT['and'](inputs)  => 1
+# nf.funcLUT['AND'](inputs)  => 1
 
 
 # Sorted list of all the node func names in this file.

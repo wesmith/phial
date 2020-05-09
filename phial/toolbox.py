@@ -14,7 +14,7 @@ import numpy as np
 import pyphi
 import pyphi.network
 # Local packages
-from phial.node_functions import *
+import phial.node_functions as nf
 
 
 # NB: This does NOT hold the state of a node.  That would increase load
@@ -31,7 +31,7 @@ class Node():
     """
     _id = 0
 
-    def __init__(self,label=None, num_states=2, id=None, func=ma_func):
+    def __init__(self,label=None, num_states=2, id=None, func=nf.MAZ_func):
         if id is None:
             id = Node._id
             Node._id += 1
@@ -73,7 +73,7 @@ class Net():
                  #cm = None, # connectivity matrix
                  SpN = 2,  # States per Node
                  title = None, # Label for graph
-                 func = maz_func, # default mechanism for all nodes
+                 func = nf.MAZ_func, # default mechanism for all nodes
                  ):
         G = nx.DiGraph()
         if edges is None:
