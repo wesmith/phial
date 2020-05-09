@@ -101,12 +101,26 @@ def tri_func(inputstates):
     else:
         return 2
 
+    
 def xor_func(inputstates):
-    """Logical XOR"""
+    """Logical XOR.
+    >>> xor_func([0,0])
+    0
+    >>> xor_func([1,1])
+    0
+    >>> xor_func([1,0])
+    1
+    >>> xor_func([1,0,0])
+    1
+    >>> xor_func([1,1,0])
+    0
+    >>> xor_func([1,1,1])
+    0
+    """
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
-    #invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.xor, inputstates))
+    nonzerovals = [v for v in inputstates if v > 0]
+    return int(len(nonzerovals) == 1)
 
 ##############################################################################
 
@@ -125,3 +139,6 @@ node_functions = sorted(funcLUT.keys())
 # import phial.node_functions as nf
 # func_names = nf.node_functions
 
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
