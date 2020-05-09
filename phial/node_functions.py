@@ -20,8 +20,8 @@ def and_func(inputstates):
     """Logical AND"""
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.and_, invals))
+    #invals = [v != 0 for v in inputstates]
+    return int(reduce(operator.and_, inputstates))
 
 # In published papers, COPY seems to assume exactly one in-edge
 def copy_func(inputstates):
@@ -30,8 +30,7 @@ def copy_func(inputstates):
         f"copy_func must have 0,1 inputs. Got {len(inputstates)}" )
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.or_, invals))
+    return int(reduce(operator.or_, inputstates))
 
 def ma_func(inputstates):
     """Mean Activation as state. Upto 15"""
@@ -78,15 +77,14 @@ def not_func(inputstates):
         f"not_func must have 0,1 inputs. Got {len(inputstates)}" )
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
     return int(inputstates[0] == 0)
 
 def or_func(inputstates):
     """Logical OR"""
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.or_, invals)    )
+    #invals = [v != 0 for v in inputstates]
+    return int(reduce(operator.or_, inputstates))
 
 def parity_func(inputstates):
     """1 if sum of inputstates is odd"""
@@ -107,8 +105,8 @@ def xor_func(inputstates):
     """Logical XOR"""
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
-    invals = [v != 0 for v in inputstates]
-    return int(reduce(operator.xor, invals))
+    #invals = [v != 0 for v in inputstates]
+    return int(reduce(operator.xor, inputstates))
 
 ##############################################################################
 

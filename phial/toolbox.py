@@ -50,16 +50,18 @@ class Node():
         return range(self.num_states)
 
     def __repr__(self):
-        return str(self.id)
+        return ('Node('
+                f'label={self.label}, '
+                f'id={self.id}, '
+                f'num_states={self.num_states}, '
+                f'func={self.func}')
 
     def __str__(self):
         return f'{self.label}({self.id}): {self.num_states},{self.func.__name__}'
 
-
-
 class Net():
     """Store everything needed to calculate phi.
-    InstanceVars: graph, states, node_lut"""
+    InstanceVars: graph, node_lut"""
 
     nn = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
     
@@ -78,10 +80,11 @@ class Net():
             n_list = range(N)
         else:
             i,j = zip(*edges)
-            minid = min(i+j)
             maxid = max(i+j)
-            n_list = sorted(range(minid,maxid+1))
-        print(f'edges={edges} n_list={n_list}')
+            n_list = sorted(set(i+j))
+        edgesStrP = type(n_list[0]) == str
+        if edgesStrP:
+            n_list = [(ord(l) - ord('A')) for l in n_list]
         nodes = [Node(id=i, label=Net.nn[i], num_states=SpN, func=func)
                  for i in n_list]
 
@@ -92,17 +95,20 @@ class Net():
             
         G.add_nodes_from(self.node_lut.keys())
         if edges is not None:
-            G.add_edges_from([(invlut[i],invlut[j]) for (i,j) in edges])
+            if edgesStrP:
+                G.add_edges_from(edges)
+            else:
+                G.add_edges_from([(invlut[i],invlut[j]) for (i,j) in edges])
         self.graph = G
         self.graph.name = title
-        #self.states = States(net=self)
         self.tpm_df = self.tpm
+
 
     def info(self):
         dd = dict(
-            edges=self.graph.edges,
-            nodes=[(n.label,n.id,n.func.__name__) for n in self.nodes],
-            # num_outstates=len(self.out_states),
+            edges=list(self.graph.edges),
+            nodes=[str(n) for n in self.nodes],
+            num_unreachable_states=len(self.unreachable_states),
         )
         return dd
         
@@ -162,12 +168,13 @@ class Net():
         return set(''.join(f'{s:x}' for s in self.tpm.iloc[i])
                    for i in range(self.tpm.shape[0]))
     @property
+    def in_states(self):
+        return self.tpm.index
+
+    @property
     def unreachable_states(self):
         """System states that are not reachable from any input states."""
-        outstates = self.out_states
-        instates = set(''.join(f'{s:x}' for s in self.tpm.iloc[i])
-                       for i in range(self.tpm.shape[1]))
-        return sorted(instates - outstates)
+        return sorted(set(self.in_states) - self.out_states)
         
 
     def nodes_to_tpm(self, verbose=False):
