@@ -31,7 +31,7 @@ class Node():
     """
     _id = 0
 
-    def __init__(self,label=None, num_states=2, id=None, func=nf.MAZ_func):
+    def __init__(self,label=None, num_states=2, id=None, func=nf.MJ_func):
         if id is None:
             id = Node._id
             Node._id += 1
@@ -73,7 +73,7 @@ class Net():
                  #cm = None, # connectivity matrix
                  SpN = 2,  # States per Node
                  title = None, # Label for graph
-                 func = nf.MAZ_func, # default mechanism for all nodes
+                 func = nf.MJ_func, # default mechanism for all nodes
                  ):
         G = nx.DiGraph()
         if edges is None:

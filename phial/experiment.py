@@ -5,6 +5,7 @@ import argparse
 import logging
 from datetime import datetime
 import json
+import platform
 # External packages
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -53,10 +54,11 @@ from phial.utils import tic,toc
 class Experiment():
     def __init__(self, edges,
                  title='',
+                 comment=None,
                  funcs={}, # dict[nodeLabel] = func
                  states={}, # dict[nodeLabel] = numStates
                  default_statesPerNode=2,
-                 default_func=nf.MAZ_func):
+                 default_func=nf.MJ_func):
         """Nodes not given as keys to funcs dict default to 'default_func'"""
         self.net = tb.Net(edges=edges, title=title,
                           SpN=default_statesPerNode,
@@ -74,7 +76,9 @@ class Experiment():
             timestamp = str(self.starttime),
             duration = self.elapsed, # seconds
             results = self.results,
-            filename = self.filename )
+            filename = self.filename,
+            uname = platform.uname(),
+        )
 
         return dd
         
@@ -142,12 +146,12 @@ def main():
     #logging.debug('Debug output is enabled!!!')
     with open(args.net, 'r') as f:
         jj = json.load(f)
-    funcs = dict((node,nf.funcLUT.get(func,nf.NOOP_func))
+    funcs = dict((node,nf.funcLUT.get(func,nf.MJ_func))
                  for node,func in jj.get('funcs').items())
     exp = Experiment(jj.get('edges',[]),
                      funcs = funcs,
                      default_statesPerNode = args.SpN,
-                     default_func = nf.funcLUT.get(args.default_func,nf.NOOP_func))
+                     default_func = nf.funcLUT.get(args.default_func,nf.MJ_func))
     exp.run()
     res = exp.info()
     answers = ', '.join([f'{s}={phi}' for (s,phi) in res['results'].items()])

@@ -1,7 +1,8 @@
 # Execute doctests using:
 #   python3 node_functions.py  # reports nothing unless found errors
 # For verbose output:
-#   python3 node_functions.py 
+#   python3 node_functions.py -v
+
 """Mechanisms (node-functions) for nodes.  
 Allows for non-binary state nodes.
 Each accepts the state from each of its immediately upstream nodes. 
@@ -21,7 +22,20 @@ import sys, inspect
 #  decorator that adds attribute to func indicating how many states it can return
 
 def AND_func(inputstates):
-    """Logical AND"""
+    """Logical AND
+    >>> AND_func([0,0])
+    0
+    >>> AND_func([1,1])
+    1
+    >>> AND_func([1,0])
+    0
+    >>> AND_func([1,0,0])
+    0
+    >>> AND_func([1,1,0])
+    0
+    >>> AND_func([1,1,1])
+    1
+    """
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
     #invals = [v != 0 for v in inputstates]
@@ -29,39 +43,42 @@ def AND_func(inputstates):
 
 # In published papers, COPY seems to assume exactly one in-edge
 def COPY_func(inputstates):
-    """Copy single input"""
+    """Copy single input
+    >>> COPY_func([0])
+    0
+    >>> COPY_func([1])
+    1
+    >>> COPY_func([1,0])
+    Traceback (most recent call last):
+       ...
+    AssertionError: COPY_func must have 0,1 inputs. Got 2
+    """
     assert len(inputstates) <= 1, (
         f"COPY_func must have 0,1 inputs. Got {len(inputstates)}" )
     if len(inputstates) == 0:
         return 0 # must return some state and we know there is at least one
     return int(reduce(operator.or_, inputstates))
 
-def MA_func(inputstates):
-    """Mean Activation as state. Upto 15"""
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    return min(15, int(sum(inputstates)/len(inputstates)))
-COPY_func = MA_func #  Indended to have exactly one input node. 
-
-def MAZ_func(inputstates):
-    """Mean Activation gt zero"""
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    return int((sum(inputstates)/len(inputstates)) > 0)
-
-def MIN_func(inputstates):
-    """Minimum state of inputstates"""
-    return min(inputstates)
-
 def MJ_func(inputstates):
-    """Majority of inputs are non-zero"""
+    """Majority of inputs are non-zero
+    >>> MJ_func([0,0])
+    0
+    >>> MJ_func([1,1])
+    1
+    >>> MJ_func([1,0])
+    0
+    >>> MJ_func([1,0,0])
+    0
+    >>> MJ_func([1,1,0])
+    1
+    """
     return int(len([v for v in inputstates if v > 0]) > len(inputstates)/2)
-MAJORITY_func=MJ_func
+#MAJORITY_func=MJ_func
 
 def MN_func(inputstates):
     """Minority of inputs are non-zero"""
     return int(len([v for v in inputstates if v > 0]) <= len(inputstates)/2)
-MINORITY_func=MN_func
+#MINORITY_func=MN_func
 
 def NAND_func(inputstates):
     """Logical Not-AND"""
@@ -89,22 +106,6 @@ def OR_func(inputstates):
         return 0 # must return some state and we know there is at least one
     #invals = [v != 0 for v in inputstates]
     return int(reduce(operator.or_, inputstates))
-
-def PARITY_func(inputstates):
-    """1 if sum of inputstates is odd"""
-    return sum(inputstates) % 2
-
-def TRI_func(inputstates):
-    """Count input states. Produces 3 states"""
-    if len(inputstates) == 0:
-        return 0 # must return some state and we know there is at least one
-    if sum(inputstates) == 0:
-        return 0
-    if sum(inputstates) == 1:
-        return 1
-    else:
-        return 2
-
     
 def XOR_func(inputstates):
     """Logical XOR. Odd number of inputs is true.
