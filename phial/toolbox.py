@@ -17,6 +17,20 @@ import pyphi.network
 import phial.node_functions as nf
 
 
+def all_states(N, spn=2, backwards=False):
+    """All combinations spn^N binary states in lexigraphical order.
+    This is NOT the order used in most IIT papers.  
+    To get order for papers, set 'backwards=True'.
+    RETURN list of statestr in hex format. e.g. '01100'
+    spn:: States Per Node
+    """
+    assert spn <= 16 # because we represent as hex string.
+    states = [''.join(f'{spn:x}' for spn in sv)
+              for sv in itertools.product(range(spn),repeat=N)]
+    if backwards:
+        states = sorted(states, key= lambda s: s[::-1])
+    return states
+
 # NB: This does NOT hold the state of a node.  That would increase load
 # on processing multiple states -- each with its own set of nodes!
 # Instead, a statestr contains states for all nodes a specific time.
@@ -40,6 +54,16 @@ class Node():
         self.num_states = num_states
         self.func = func 
         
+    def truth_table(self, max_inputs=4):
+        """Full truth table for function associated with Node. Inputs consist
+        of all possible lists of binary values up to length 'max_inputs'.
+        """
+        table = []
+        for length in range(max_inputs+1):
+            table.extend([(''.join(str(s) for s in sv),self.func(sv))
+                          for sv in itertools.product([0,1],repeat=length)])
+        return table
+
     @property
     def random_state(self):
         return choice(range(self.num_states))
@@ -61,16 +85,16 @@ class Node():
 
 class Net():
     """Store everything needed to calculate phi.
-    InstanceVars: graph, node_lut"""
+    InstanceVars: graph, node_lut, tpm
+    """
 
     nn = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
     
     def __init__(self,
                  edges = None, # connectivity edges; e.g. [(0,1), (1,2), (2,0)]
-                 N = 5, # Number of nodes
+                 tpm = None, # default: using node funcs to calc
+                 #N = 5, # Number of nodes
                  #graph = None, # networkx graph
-                 #nodes = None, # e.g. list('ABCD')
-                 #cm = None, # connectivity matrix
                  SpN = 2,  # States per Node
                  title = None, # Label for graph
                  func = nf.MJ_func, # default mechanism for all nodes
@@ -101,9 +125,14 @@ class Net():
                 G.add_edges_from([(invlut[i],invlut[j]) for (i,j) in edges])
         self.graph = G
         self.graph.name = title
-        self.tpm_df = self.tpm
-
-
+        if tpm is None:
+            self.tpm = self.calc_tpm
+        else:
+            allstates = all_states(len(self.graph), backwards=True)
+            allnodes = [n.label for n in nodes]
+            self.tpm = pd.DataFrame(tpm, index=allstates, columns=allnodes)
+            
+            
     def info(self):
         dd = dict(
             edges=list(self.graph.edges),
@@ -138,7 +167,7 @@ class Net():
         return [counts[i]/total for i in node.states]
 
     @property
-    def tpm(self):
+    def calc_tpm(self):
         """Iterate over all possible states(!!!) using node funcs
         to calculate output state. State-to-State form. Allows non-binary"""
         backwards=True  # I hate the order the papers use!!
@@ -158,14 +187,14 @@ class Net():
         if backwards:
             newindex= sorted(df.index, key= lambda lab: lab[::-1])
             return df.reindex(index=newindex)
-        return df
+        return df.astype(int)
 
     @property
     def out_states(self):
         """Output states of TPM in hexstr form. These are the states allowed
         for the 'statestr' phi method.
         Otherwise the error 'cannot be reached in the given TPM' is thrown."""
-        return set(''.join(f'{s:x}' for s in self.tpm.iloc[i])
+        return set(''.join(f'{int(s):x}' for s in self.tpm.iloc[i])
                    for i in range(self.tpm.shape[0]))
     @property
     def in_states(self):
@@ -264,13 +293,15 @@ class Net():
     def phi(self, statestr=None):
         """Calculate phi for net."""
         if statestr is None:
-            instatestr = choice(self.tpm_df.index)
-            statestr = ''.join(f'{s:x}' for s in self.tpm_df.loc[instatestr,:])
+            instatestr = choice(self.tpm.index)
+            statestr = ''.join(f'{int(s):x}' for s in self.tpm.loc[instatestr,:])
+        #!print(f'DBG statestr={statestr}')
         state = [int(c) for c in list(statestr)] 
         print(f'Calculating Φ at state={state}')
         node_indices = tuple(range(len(self.graph)))
         subsystem = pyphi.Subsystem(self.pyphi_network, state, node_indices)
         return pyphi.compute.phi(subsystem)
+#END Net()
 
 def phi_all_states(net):
     """Run pyphi.compute.phi over all reachable states in net."""
@@ -279,4 +310,19 @@ def phi_all_states(net):
         results[statestr] = net.phi(statestr)
         print(f"Φ = {results[statestr]} using state={statestr}")
     return results
+
+def pyphi_network_to_net(network):
+    """Load pyphi network into this instance (overwrite existing data)."""
+    labelLUT = dict(zip(network._node_indices, network._node_labels))
+    cm = network.cm
+    G = nx.DiGraph(cm)
+    tpm = pyphi.convert.to_2dimensional(network.tpm) # sbn form
+    net = Net(G.edges)
+    allstates = list(itertools.product(*[n.states for n in net.nodes]))
+    for si,sv in enumerate(allstates):
+        s0 = ''.join(f'{s:x}' for s in sv)
+        for ni in range(len(net)):
+            node = net.nodes[ni]
+            net.tpm.loc[s0,node.label] = tpm[si][ni]
+    return net
 

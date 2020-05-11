@@ -57,12 +57,16 @@ class Experiment():
                  comment=None,
                  funcs={}, # dict[nodeLabel] = func
                  states={}, # dict[nodeLabel] = numStates
+                 net = None,
                  default_statesPerNode=2,
                  default_func=nf.MJ_func):
         """Nodes not given as keys to funcs dict default to 'default_func'"""
-        self.net = tb.Net(edges=edges, title=title,
-                          SpN=default_statesPerNode,
-                          func=default_func)
+        if net is not None:
+            self.net = net
+        else:
+            self.net = tb.Net(edges=edges, title=title,
+                              SpN=default_statesPerNode,
+                              func=default_func)
         self.title = title
         for label,func in funcs.items():
             self.net.get_node(label).func = func
