@@ -5,18 +5,29 @@ https://www.graphviz.org/
 from collections import Counter, defaultdict
 import itertools
 from random import choice
+import subprocess
+import json
+import re
 # External packages
 import networkx as nx
-from networkx.drawing.nx_pydot import write_dot
-from networkx.drawing.nx_pydot import pydot_layout
+from networkx.drawing.nx_pydot import write_dot,pydot_layout
 import pandas as pd
 import numpy as np
 import pyphi
 import pyphi.network
+from pyphi.convert import sbn2sbs, sbs2sbn, to_2d
 # Local packages
 import phial.node_functions as nf
 
 
+def nodes_state(state, nodelabels):
+    """Convert system state (statehexstr) to dict[nodeLabel]=nodeState"""
+    return dict((n,int(s,16)) for n,s in zip(nodelabels, state))
+
+def system_state(nodes_state):
+    """Convert nodes_state (dict[label]=state) to statehexstr"""
+    return ''.join(f'{i:x}' for i in nodes_state.values())
+    
 def all_states(N, spn=2, backwards=False):
     """All combinations spn^N binary states in lexigraphical order.
     This is NOT the order used in most IIT papers.  
@@ -78,11 +89,12 @@ class Node():
                 f'label={self.label}, '
                 f'id={self.id}, '
                 f'num_states={self.num_states}, '
-                f'func={self.func}')
+                f'func={self.func.__name__}')
 
     def __str__(self):
         return f'{self.label}({self.id}): {self.num_states},{self.func.__name__}'
 
+    
 class Net():
     """Store everything needed to calculate phi.
     InstanceVars: graph, node_lut, tpm
@@ -93,7 +105,7 @@ class Net():
     def __init__(self,
                  edges = None, # connectivity edges; e.g. [(0,1), (1,2), (2,0)]
                  tpm = None, # default: using node funcs to calc
-                 #N = 5, # Number of nodes
+                 N = 5, # Number of nodes
                  #graph = None, # networkx graph
                  SpN = 2,  # States per Node
                  title = None, # Label for graph
@@ -126,20 +138,84 @@ class Net():
         self.graph = G
         self.graph.name = title
         if tpm is None:
-            self.tpm = self.calc_tpm
+            self.tpm = self.calc_tpm()
         else:
             allstates = all_states(len(self.graph), backwards=True)
             allnodes = [n.label for n in nodes]
             self.tpm = pd.DataFrame(tpm, index=allstates, columns=allnodes)
             
             
+    @property
+    def state_graph(self):
+        G = nx.DiGraph(sbn2sbs(self.tpm))
+        mapping = dict(zip(range(len(self.tpm.index)), self.tpm.index))
+        S = nx.relabel_nodes(G, mapping)
+        return S
+
+    def from_json(self, jsonstr,
+                  func = nf.MJ_func, # default mechanism for all nodes
+                  SpN=2):
+        self.graph = self.node_lut = self.tpm = None
+        jdict = json.loads(jsonstr)
+        edges = jdict.get('edges',[])
+        i,j = zip(*edges)
+        n_list = sorted(set(i+j))
+        nodes = [Node(**nd) for nd in jdict.get('nodes',[])]
+        for n in nodes:
+            n.func = nf.funcLUT[n.func]
+        
+        self.graph = nx.DiGraph(edges)
+        self.node_lut = dict((n.label,n) for n in nodes)
+
+        S = nx.DiGraph(jdict.get('tpm',[]))
+        #self.tpm = sbs2sbn(nx.to_pandas_adjacency(S))
+        s2s_df = nx.to_pandas_adjacency(S)
+        df = pd.DataFrame(index=s2s_df.index, columns=self.node_lut.keys())
+        for istate in s2s_df.index:
+            for outstate in s2s_df.columns:
+                if s2s_df.loc[istate,outstate] == 0:
+                    continue
+                ns = nodes_state(outstate,self.node_lut.keys())
+                print(f'DBG: istate={istate} ns={ns}')
+                df.loc[istate] = list(ns.values())
+        self.tpm = df
+
+    def to_json(self):
+        S = self.state_graph
+        
+        jj = dict(
+            edges=list(self.graph.edges),
+            nodes=[dict(label=n.label,
+                        id=n.id,
+                        num_states=n.num_states,
+                        func=re.sub('_func$','',n.func.__name__) )
+                   for n in self.nodes],
+            tpm = list(S.edges),
+        )
+        return json.dumps(jj)
+
     def info(self):
         dd = dict(
             edges=list(self.graph.edges),
             nodes=[str(n) for n in self.nodes],
+            num_in_states=len(self.in_states),
             num_unreachable_states=len(self.unreachable_states),
+            num_state_cc = self.state_cc,
+            num_state_cycles = len(list(self.state_cycles))
         )
         return dd
+        
+    @property
+    def state_cc(self):
+        """Number of connected components in state to state graph."""
+        S = nx.DiGraph(sbn2sbs(self.tpm))
+        return nx.number_weakly_connected_components(S)
+
+    @property
+    def state_cycles(self):
+        """Cycles found in state to state graph."""
+        S = nx.DiGraph(sbn2sbs(self.tpm))
+        return nx.simple_cycles(S)
         
     def node_state_counts(self, node):
         """Truth table of node.func run over all possible inputs.
@@ -166,7 +242,6 @@ class Net():
         total = sum(counts.values())
         return [counts[i]/total for i in node.states]
 
-    @property
     def calc_tpm(self):
         """Iterate over all possible states(!!!) using node funcs
         to calculate output state. State-to-State form. Allows non-binary"""
@@ -206,36 +281,6 @@ class Net():
         return sorted(set(self.in_states) - self.out_states)
         
 
-    def nodes_to_tpm(self, verbose=False):
-        """Iterate over all possible states(!!!) using node funcs
-        to calculate output state. State-to-Node form. binary nodes only"""
-        transitions = defaultdict(int) # transitions[(s0,s1)] => count
-        allstates = list(itertools.product(*[n.states for n in self.nodes]))
-        for sv in allstates:
-            s0 = ''.join(f'{s:x}' for s in sv)
-            sv1 = list(sv)
-            for i in range(len(sv)):
-                node = self.nodes[i]
-                cnt = self.node_state_counts(node)
-                for nodestate in node.states:
-                    sv1[i] = nodestate
-                    s1 = ''.join(f'{s:x}' for s in sv1)
-                    transitions[(s0,s1)] += cnt[nodestate]
-            # pad because pyphi requires full matrix
-            for sv1 in allstates:
-                s1 = ''.join(f'{s:x}' for s in sv1)                
-                transitions[(s0,s1)] += 0
-
-        # Convert counts to DF
-        allstatesstr = [''.join([f'{s:x}' for s in sv]) for sv in allstates]
-        allnodes = [n.label for n in self.nodes()]
-        df = pd.DataFrame(index=allstatesstr, columns=allnodes).fillna(0)
-        for ((s0,s1),count) in transitions.items():
-            df.loc[s0,s1] =  df.loc[s0,s1] + count
-            
-        # return normalized form
-        return df.fillna(0)
-    
     @property
     def cm(self):
         return nx.to_numpy_array(self.graph)
@@ -265,7 +310,7 @@ class Net():
     def __len__(self):
         return len(self.graph)
 
-    def graph(self, pngfile=None):
+    def gvgraph(self, pngfile=None):
         """Return networkx DiGraph. Maybe write to PNG file."""
         G = nx.DiGraph(self.graph)
         if pngfile is not None:
@@ -276,6 +321,8 @@ class Net():
                 subprocess.check_output(cmd, shell=True)
         return G
 
+
+
     def draw(self):
         nx.draw(self.graph,
                 pos=pydot_layout(self.graph),
@@ -283,6 +330,12 @@ class Net():
                 with_labels=True )
         return self
 
+    def draw_states(self):
+        G = nx.DiGraph(sbn2sbs(self.tpm))
+        mapping = dict(zip(range(len(self.tpm.index)), self.tpm.index))
+        S = nx.relabel_nodes(G, mapping)
+        nx.draw(S, pos=pydot_layout(S), with_labels=True )
+            
     @property
     def pyphi_network(self):
         """Return pyphi Network() instance."""
@@ -290,14 +343,16 @@ class Net():
                                      cm=self.cm,
                                      node_labels=self.node_labels)
 
-    def phi(self, statestr=None):
+    
+    def phi(self, statestr=None, verbose=False):
         """Calculate phi for net."""
         if statestr is None:
             instatestr = choice(self.tpm.index)
             statestr = ''.join(f'{int(s):x}' for s in self.tpm.loc[instatestr,:])
         #!print(f'DBG statestr={statestr}')
         state = [int(c) for c in list(statestr)] 
-        print(f'Calculating Φ at state={state}')
+        if verbose:
+            print(f'Calculating Φ at state={state}')
         node_indices = tuple(range(len(self.graph)))
         subsystem = pyphi.Subsystem(self.pyphi_network, state, node_indices)
         return pyphi.compute.phi(subsystem)
@@ -316,7 +371,7 @@ def pyphi_network_to_net(network):
     labelLUT = dict(zip(network._node_indices, network._node_labels))
     cm = network.cm
     G = nx.DiGraph(cm)
-    tpm = pyphi.convert.to_2dimensional(network.tpm) # sbn form
+    tpm = to_2d(network.tpm) # sbn form
     net = Net(G.edges)
     allstates = list(itertools.product(*[n.states for n in net.nodes]))
     for si,sv in enumerate(allstates):
