@@ -14,12 +14,14 @@ import phial.toolbox as tb
 import phial.node_functions as nf
 from phial.utils import tic,toc,Timer
 
-    
-def gen_truth_funcs(map_node_argcnt):
+
+
+def gen_truth_funcs(map_node_argcnt): # DUMMY!!! @@@
     """map_node_argcnt: d[nodeLabel] = numArgs
     RETURN: d[nodeLabel] = [func1(inputs), func2(inputs), ... ]
     """
-    funcs = dict(k,[lambda inputs: inputs[0], lambda inputs: int(not(inputs[0]))]
+    funcs = dict((k,[lambda inputs: inputs[0],
+                     lambda inputs: int(not(inputs[0]))])
                  for k in map_node_argcnt.keys())
     return funcs
     
@@ -54,24 +56,24 @@ class Experiment():
         for label,num in states.items():
             self.net.get_node(label).num_states = num
 
-    def generate_truth(self):
-        f = gen_truth_funcs(dict(n.label,self.net.graph.predeecessors(n.label))
-                            for n in self.net.nodes)
+    def generate_truth(self): 
+        f = gen_truth_funcs(dict((n.label,self.net.graph.predeecessors(n.label))
+                            for n in self.net.nodes))
         self.node_func_list = f
 
     def gen_tpm(self, node_func_map):
         """node_func_map: d[nodeLabel] = funcIndex"""
         for n in self.net.nodes:
             funcidx = self.node_func_map[n.label]
-            funclist = self.node_func_list[n.label]
+            funclist = self.node_func_map[n.label]
             n.func = funclist[min(funcidx, len(funclist)-1)]
         self.net.calc_tpm()
         return self.net.tpm
     
     @property
     def get_num_funcs(self):
-        return dict(n.label,len(self.node_func_list.get(n.label,[]))
-                    for n self.net.nodes)
+        return dict((n.label,len(self.node_func_map.get(n.label,[])))
+                    for n in self.net.nodes)
         
 
     def info(self):
