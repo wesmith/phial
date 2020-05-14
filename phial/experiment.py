@@ -3,9 +3,11 @@
 import sys
 import argparse
 import logging
-from datetime import datetime
+from datetime import datetime,date
 import json
 import platform
+from pprint import pprint
+from pathlib import Path
 # External packages
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -37,6 +39,7 @@ class Experiment():
                  funcs={}, # dict[nodeLabel] = func
                  states={}, # dict[nodeLabel] = numStates
                  net = None,
+                 saveDir = Path.home() / 'phial',
                  default_statesPerNode=2,
                  default_func=nf.MJ_func):
         """Nodes not given as keys to funcs dict default to 'default_func'"""
@@ -44,6 +47,7 @@ class Experiment():
         self.filename = None
         self.starttime = None
         self.elapsed = None
+        self.saveDir = saveDir
 
         if net is not None:
             self.net = net
@@ -95,10 +99,9 @@ class Experiment():
             filename = self.filename,
             uname = platform.uname(),
         )
-
         return dd
         
-    def run(self, verbose=False, plot=False, **kwargs):
+    def run(self, verbose=False, plot=False, save=True, **kwargs):
         timer0 = Timer()
         timer1 = Timer()
         timer0.tic # start tracking time
@@ -115,7 +118,25 @@ class Experiment():
         self.elapsed = timer0.toc  # Seconds since start
         if plot:
             self.analyze(**kwargs)
+        if save:
+            if type(save) == str:
+                self.save(self.saveDir/f'{save}.json')
+            else:
+                self.save()
+        return self.info()
 
+    def save(self, filename=None):
+        #now=datetime.now().isoformat(timespec='seconds')
+        now=datetime.now().isoformat()
+        fname = filename or self.saveDir/f'results_{now}.json'
+
+        out = dict(net=self.net.to_json(),
+                   results=self.info() )
+        with open(fname, 'w') as f:
+            json.dump(out, indent=2, fp=f)
+        print(f'Saved experiment with results to: {fname}')
+        return fname
+    
     def analyze(self, figsize=(14,4), countUnreachable=False):
         dd = dict((s,v['phi']) for s,v in self.results.items())
         if countUnreachable:

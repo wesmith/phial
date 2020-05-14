@@ -2,6 +2,7 @@ pyphi.log
 pyphi_config.yml
 notebooks/pyphi_config.yml
 notebooks/del.log
+notebooks/.ipynb_checkpoints
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

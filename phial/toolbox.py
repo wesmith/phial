@@ -180,7 +180,7 @@ class Net():
                 df.loc[istate] = list(ns.values())
         self.tpm = df
 
-    def to_json(self):
+    def to_json(self, filename=None):
         S = self.state_graph
         
         jj = dict(
@@ -192,7 +192,10 @@ class Net():
                    for n in self.nodes],
             tpm = list(S.edges),
         )
-        return json.dumps(jj)
+        if filename is not None:
+            with open(filename, 'w') as f:
+                json.dump(jj, fp=f)
+        return jj
 
     def info(self):
         dd = dict(
