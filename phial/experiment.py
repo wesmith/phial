@@ -18,18 +18,6 @@ import phial.gen_funcs as gf
 from phial.utils import tic,toc,Timer
 
 
-
-def gen_truth_funcs(map_node_argcnt): # DUMMY!!! @@@
-    """map_node_argcnt: d[nodeLabel] = numArgs
-    RETURN: d[nodeLabel] = [func1(inputs), func2(inputs), ... ]
-    """
-    funcs = dict((k,[lambda inputs: inputs[0],
-                     lambda inputs: int(not(inputs[0]))])
-                 for k in map_node_argcnt.keys())
-    return funcs
-    
-
-
 # nodes are extracted from edges.  This means an experiment cannot contain
 # a node that has no edges. (self edge is ok)
 class Experiment():
@@ -47,7 +35,7 @@ class Experiment():
         self.filename = None
         self.starttime = None
         self.elapsed = None
-        self.saveDir = saveDir
+        self.saveDir = Path(saveDir).expanduser()
 
         if net is not None:
             self.net = net
@@ -92,6 +80,12 @@ class Experiment():
         return self.net.tpm
     
     def info(self):
+        """Info about most recent results
+
+        :returns: dict with keys: timestamp, duration, results, uname
+        :rtype: dict
+
+        """
         dd = dict(
             timestamp = str(self.starttime),
             duration = self.elapsed, # seconds
@@ -101,7 +95,18 @@ class Experiment():
         )
         return dd
         
+
     def run(self, verbose=False, plot=False, save=True, **kwargs):
+        """Calculate big-phi for all reachable states over network defined 
+        in this instance.
+
+        :param verbose: Runtime info on what is being done
+        :param plot: Plots analysis of results
+        :param save: if True save experiment to auto-generated name. If str, save to that basename in `saveDir`
+        :returns: info about results
+        :rtype: dict
+
+        """
         timer0 = Timer()
         timer1 = Timer()
         timer0.tic # start tracking time

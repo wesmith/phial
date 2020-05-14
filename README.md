@@ -1,12 +1,16 @@
-# phial - A container for tools that support running ϕ experiments
-(/ˈfī(ə)l/)
+================================================================
+phial - A container for tools that support running ϕ experiments
+================================================================
+
+(Pronounced: /ˈfī(ə)l/)
 
 This is a collection of tools to help use
 [pyphi](https://pyphi.readthedocs.io/en/latest/ "Calculator for Phi as
 described in Integration Information Theory 3.0")
 
-
-## The goodies
+-----------
+The goodies
+-----------
 
 The **notebooks** directory contains
 [Jupyter Notebooks](https://jupyter.org/ "Project Jupyter|Home") that

@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>API &#8212; phial 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="phial - A container for tools that support running ϕ experiments" href="readme_link.html" />
+    <link rel="prev" title="About Phial" href="phial.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="readme_link.html" title="phial - A container for tools that support running ϕ experiments"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="phial.html" title="About Phial"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">phial 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-experiment">
+<span id="experiment"></span><h2>Experiment<a class="headerlink" href="#module-experiment" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="experiment.Experiment">
+<em class="property">class </em><code class="sig-prename descclassname">experiment.</code><code class="sig-name descname">Experiment</code><span class="sig-paren">(</span><em class="sig-param">edges</em>, <em class="sig-param">title=''</em>, <em class="sig-param">comment=None</em>, <em class="sig-param">funcs={}</em>, <em class="sig-param">states={}</em>, <em class="sig-param">net=None</em>, <em class="sig-param">saveDir=PosixPath('/home/pothiers/phial')</em>, <em class="sig-param">default_statesPerNode=2</em>, <em class="sig-param">default_func=&lt;function MJ_func&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="experiment.Experiment.analyze">
+<code class="sig-name descname">analyze</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">14, 4</span></em>, <em class="sig-param"><span class="n">countUnreachable</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.analyze" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.gen_tpm">
+<code class="sig-name descname">gen_tpm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_func_idx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.gen_tpm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign funcs to nodes, then create system TPM.
+node_func_idx:: d[nodeLabel] = funcIndex</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.get_num_funcs">
+<em class="property">property </em><code class="sig-name descname">get_num_funcs</code><a class="headerlink" href="#experiment.Experiment.get_num_funcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Experimenter uses this to get the count of functions available for
+each node.  She uses the count in call to <cite>gen_tpm</cite> to assign 
+one of the available functions to selected nodes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.info">
+<code class="sig-name descname">info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Info about most recent results</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict with keys: timestamp, duration, results, uname</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">save</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate big-phi for all reachable states over network defined 
+in this instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>verbose</strong> – Runtime info on what is being done</p></li>
+<li><p><strong>plot</strong> – Plots analysis of results</p></li>
+<li><p><strong>save</strong> – if True save experiment to auto-generated name. If str, save to that basename in <cite>saveDir</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>info about results</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="experiment.main">
+<code class="sig-prename descclassname">experiment.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiment.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-toolbox">
+<span id="toolbox"></span><h2>Toolbox<a class="headerlink" href="#module-toolbox" title="Permalink to this headline">¶</a></h2>
+<p>To use the graph DRAW methods, you must have graphviz installed.
+<a class="reference external" href="https://www.graphviz.org/">https://www.graphviz.org/</a></p>
+<dl class="py class">
+<dt id="toolbox.Net">
+<em class="property">class </em><code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">Net</code><span class="sig-paren">(</span><em class="sig-param">edges=None</em>, <em class="sig-param">tpm=None</em>, <em class="sig-param">N=5</em>, <em class="sig-param">SpN=2</em>, <em class="sig-param">title=None</em>, <em class="sig-param">func=&lt;function MJ_func&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Store everything needed to calculate phi.
+InstanceVars: graph, node_lut, tpm</p>
+<dl class="py method">
+<dt id="toolbox.Net.calc_tpm">
+<code class="sig-name descname">calc_tpm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.calc_tpm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all possible states(!!!) using node funcs
+to calculate output state. State-to-State form. Allows non-binary.
+Does not save the resulting TPM.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.cm">
+<em class="property">property </em><code class="sig-name descname">cm</code><a class="headerlink" href="#toolbox.Net.cm" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.df">
+<em class="property">property </em><code class="sig-name descname">df</code><a class="headerlink" href="#toolbox.Net.df" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.draw" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.draw_states">
+<code class="sig-name descname">draw_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.draw_states" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.eval_node">
+<code class="sig-name descname">eval_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em>, <em class="sig-param"><span class="n">system_state_tup</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.eval_node" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.from_json">
+<code class="sig-name descname">from_json</code><span class="sig-paren">(</span><em class="sig-param">jsonstr</em>, <em class="sig-param">func=&lt;function MJ_func&gt;</em>, <em class="sig-param">SpN=2</em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.from_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.get_node">
+<code class="sig-name descname">get_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_label</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.get_node" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.get_nodes">
+<code class="sig-name descname">get_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_labels</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.get_nodes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.gvgraph">
+<code class="sig-name descname">gvgraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pngfile</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.gvgraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return networkx DiGraph. Maybe write to PNG file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.in_states">
+<em class="property">property </em><code class="sig-name descname">in_states</code><a class="headerlink" href="#toolbox.Net.in_states" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.info">
+<code class="sig-name descname">info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="toolbox.Net.nn">
+<code class="sig-name descname">nn</code><em class="property"> = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']</em><a class="headerlink" href="#toolbox.Net.nn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.node_labels">
+<em class="property">property </em><code class="sig-name descname">node_labels</code><a class="headerlink" href="#toolbox.Net.node_labels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.node_pd">
+<code class="sig-name descname">node_pd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.node_pd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Probability Distribution of NODE states given all possible inputs
+constrained by graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.node_state_counts">
+<code class="sig-name descname">node_state_counts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.node_state_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truth table of node.func run over all possible inputs.
+Inputs are predecessor nodes with all possible states.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.nodes">
+<em class="property">property </em><code class="sig-name descname">nodes</code><a class="headerlink" href="#toolbox.Net.nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of all nodes in ID order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.out_states">
+<em class="property">property </em><code class="sig-name descname">out_states</code><a class="headerlink" href="#toolbox.Net.out_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output states of TPM in hexstr form. These are the states allowed
+for the ‘statestr’ phi method.
+Otherwise the error ‘cannot be reached in the given TPM’ is thrown.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.phi">
+<code class="sig-name descname">phi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">statestr</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.phi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate phi for net.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.pyphi_network">
+<em class="property">property </em><code class="sig-name descname">pyphi_network</code><a class="headerlink" href="#toolbox.Net.pyphi_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return pyphi Network() instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.state_cc">
+<em class="property">property </em><code class="sig-name descname">state_cc</code><a class="headerlink" href="#toolbox.Net.state_cc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of connected components in state to state graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.state_cycles">
+<em class="property">property </em><code class="sig-name descname">state_cycles</code><a class="headerlink" href="#toolbox.Net.state_cycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cycles found in state to state graph.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.state_graph">
+<em class="property">property </em><code class="sig-name descname">state_graph</code><a class="headerlink" href="#toolbox.Net.state_graph" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.to_json">
+<code class="sig-name descname">to_json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.to_json" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.unreachable_states">
+<em class="property">property </em><code class="sig-name descname">unreachable_states</code><a class="headerlink" href="#toolbox.Net.unreachable_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>System states that are not reachable from any input states.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="toolbox.Node">
+<em class="property">class </em><code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">Node</code><span class="sig-paren">(</span><em class="sig-param">label=None</em>, <em class="sig-param">num_states=2</em>, <em class="sig-param">id=None</em>, <em class="sig-param">func=&lt;function MJ_func&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Node in network. Supports more than just two states but downstream 
+software may be built for only binary nodes. Auto increment node id that 
+will be used as label if one isn’t provided on creation.</p>
+<dl class="py method">
+<dt id="toolbox.Node.random_state">
+<em class="property">property </em><code class="sig-name descname">random_state</code><a class="headerlink" href="#toolbox.Node.random_state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Node.states">
+<em class="property">property </em><code class="sig-name descname">states</code><a class="headerlink" href="#toolbox.Node.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>States supported by this node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Node.truth_table">
+<code class="sig-name descname">truth_table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">max_inputs</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Node.truth_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Full truth table for function associated with Node. Inputs consist
+of all possible lists of binary values up to length ‘max_inputs’.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.all_states">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">all_states</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">spn</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">backwards</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.all_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>All combinations spn^N binary states in lexigraphical order.
+This is NOT the order used in most IIT papers.  
+To get order for papers, set ‘backwards=True’.
+RETURN list of statestr in hex format. e.g. ‘01100’
+spn:: States Per Node</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.nodes_state">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">nodes_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em>, <em class="sig-param"><span class="n">nodelabels</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.nodes_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert system state (statehexstr) to dict[nodeLabel]=nodeState</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.phi_all_states">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">phi_all_states</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">net</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.phi_all_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run pyphi.compute.phi over all reachable states in net.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.pyphi_network_to_net">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">pyphi_network_to_net</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">network</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.pyphi_network_to_net" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load pyphi network into this instance (overwrite existing data).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.system_state">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">system_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nodes_state</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.system_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert nodes_state (dict[label]=state) to statehexstr</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">API</a><ul>
+<li><a class="reference internal" href="#module-experiment">Experiment</a></li>
+<li><a class="reference internal" href="#module-toolbox">Toolbox</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="phial.html"
+                        title="previous chapter">About Phial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="readme_link.html"
+                        title="next chapter">phial - A container for tools that support running ϕ experiments</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="readme_link.html" title="phial - A container for tools that support running ϕ experiments"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="phial.html" title="About Phial"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">phial 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, S.Pothier.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>
