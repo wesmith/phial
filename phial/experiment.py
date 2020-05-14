@@ -9,6 +9,8 @@ import platform
 # External packages
 import pandas as pd
 import matplotlib.pyplot as plt
+import itertools as it
+import numpy as np
 # Local packages
 import phial.toolbox as tb
 import phial.node_functions as nf
