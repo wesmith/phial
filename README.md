@@ -6,9 +6,18 @@ This is a collection of tools to help use
 described in Integration Information Theory 3.0")
 
 
-Test with:
+## The goodies
 
-    cd phial
-    pytest --doctest-modules
-    
-    
+The **notebooks** directory contains
+[Jupyter Notebooks](https://jupyter.org/ "Project Jupyter|Home") that
+- show you how to use the tools
+- run experiments
+
+The **examples** directory contains data files for experiments. These
+are data files that can be loaded into an Experiment.
+
+
+
+
+
+
