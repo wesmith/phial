@@ -12,41 +12,19 @@ import matplotlib.pyplot as plt
 # Local packages
 import phial.toolbox as tb
 import phial.node_functions as nf
-from phial.utils import tic,toc
+from phial.utils import tic,toc,Timer
 
-#! def get_net(ledges, nodes, funcs, title=''):
-#!     # wrapper for SP tools
-#!     i, j = zip(*ledges)
-#!     indexLUT = dict([(l,ord(l)-ord(nodes[0])) for l in sorted(set(i+j))])
-#!     edges = [(indexLUT[i],indexLUT[j]) for i,j in ledges]
-#!     net = tb.Net(edges=edges, title=title)
-#!     for j,k in zip(nodes, funcs):
-#!         net.get_node(j).func = k
-#!     return net
-#! 
-#! def get_phi(perm, net):
-#!     try:
-#!         return net.phi(perm)
-#!     except:
-#!         return -1 # state isn't reachable
-#! 
-#! def run_expt(edges, nodes, funcs, title='', figsize=(14,4), clean=True):
-#!     plt.rcParams['figure.figsize'] = figsize
-#!     if clean: # remove pyphi output from stdout
-#!         orig_stdout = sys.stdout
-#!         log = open("del.log", "a")
-#!         sys.stdout = log
-#!     net = get_net(edges, nodes, funcs, title=title)
-#!     fig, ax = plt.subplots(1,2)
-#!     net.draw()
-#!     df=net.tpm
-#!     dd = [(k, get_phi(k, net)) for k in df.index]
-#!     dff = pd.DataFrame(dd)
-#!     hist = dff.hist(bins=100, ax=ax[0])
-#!     fig.suptitle(title)
-#!     if clean:  # reset stdout
-#!         sys.stdout = orig_stdout
-#!         log.close()
+
+
+def gen_truth_funcs(map_node_argcnt): # DUMMY!!! @@@
+    """map_node_argcnt: d[nodeLabel] = numArgs
+    RETURN: d[nodeLabel] = [func1(inputs), func2(inputs), ... ]
+    """
+    funcs = dict((k,[lambda inputs: inputs[0],
+                     lambda inputs: int(not(inputs[0]))])
+                 for k in map_node_argcnt.keys())
+    return funcs
+    
 
 
 # nodes are extracted from edges.  This means an experiment cannot contain
@@ -57,19 +35,46 @@ class Experiment():
                  comment=None,
                  funcs={}, # dict[nodeLabel] = func
                  states={}, # dict[nodeLabel] = numStates
+                 net = None,
                  default_statesPerNode=2,
                  default_func=nf.MJ_func):
         """Nodes not given as keys to funcs dict default to 'default_func'"""
-        self.net = tb.Net(edges=edges, title=title,
-                          SpN=default_statesPerNode,
-                          func=default_func)
+        self.results = {}
+        self.filename = None
+        self.starttime = None
+        self.elapsed = None
+
+        if net is not None:
+            self.net = net
+        else:
+            self.net = tb.Net(edges=edges, title=title,
+                              SpN=default_statesPerNode,
+                              func=default_func)
         self.title = title
         for label,func in funcs.items():
             self.net.get_node(label).func = func
         for label,num in states.items():
             self.net.get_node(label).num_states = num
-        self.results = None
-        self.filename = None
+
+    def generate_truth(self): 
+        f = gen_truth_funcs(dict((n.label,self.net.graph.predeecessors(n.label))
+                            for n in self.net.nodes))
+        self.node_func_list = f
+
+    def gen_tpm(self, node_func_map):
+        """node_func_map: d[nodeLabel] = funcIndex"""
+        for n in self.net.nodes:
+            funcidx = self.node_func_map[n.label]
+            funclist = self.node_func_map[n.label]
+            n.func = funclist[min(funcidx, len(funclist)-1)]
+        self.net.calc_tpm()
+        return self.net.tpm
+    
+    @property
+    def get_num_funcs(self):
+        return dict((n.label,len(self.node_func_map.get(n.label,[])))
+                    for n in self.net.nodes)
+        
 
     def info(self):
         dd = dict(
@@ -82,29 +87,36 @@ class Experiment():
 
         return dd
         
-    def run(self, figsize=(14,4), clean=True, countUnreachable=False):
-        tic() # start tracking time
+    def run(self, verbose=False, plot=False, **kwargs):
+        timer0 = Timer()
+        timer1 = Timer()
+        timer0.tic # start tracking time
         self.starttime = datetime.now()
-        plt.rcParams['figure.figsize'] = figsize
-        if clean: # remove pyphi output from stdout
-            orig_stdout = sys.stdout
-            log = open("del.log", "a")
-            sys.stdout = log
-        fig, ax = plt.subplots(1,2)
-        self.net.draw()
-        df=self.net.tpm
-        #dd = [(k, get_phi(k, net)) for k in df.index]
-        dd = dict((s, self.net.phi(s)) for s in self.net.out_states)
+
+        # Calculate!
+        for s in self.net.out_states:
+            timer1.tic 
+            phi = self.net.phi(s)
+            secs = timer1.toc
+            self.results[s] = dict(phi=phi, elapsed_seconds=secs)
+            if verbose:
+                print(f"Calculated Φ = {phi} using state={s} in {secs} seconds")
+        self.elapsed = timer0.toc  # Seconds since start
+        if plot:
+            self.analyze(**kwargs)
+
+    def analyze(self, figsize=(14,4), countUnreachable=False):
+        dd = dict((s,v['phi']) for s,v in self.results.items())
         if countUnreachable:
             dd.update(dict((s,-1) for s in self.net.unreachable_states))
-        dff = pd.DataFrame(list(dd.items()))
+        plt.rcParams['figure.figsize'] = figsize
+        fig, ax = plt.subplots(1,2)
+        self.net.draw()
+        #df=self.net.tpm
+
+        dff = pd.DataFrame(dd.items())
         hist = dff.hist(bins=100, ax=ax[0])
         fig.suptitle(self.title)
-        if clean:  # reset stdout
-            sys.stdout = orig_stdout
-            log.close()
-        self.results = dd
-        self.elapsed = toc()  # Seconds since start
         
 ##############################################################################
 

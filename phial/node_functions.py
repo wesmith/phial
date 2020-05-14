@@ -60,7 +60,8 @@ def COPY_func(inputstates):
     return int(reduce(operator.or_, inputstates))
 
 def MJ_func(inputstates):
-    """Majority of inputs are non-zero
+    """Majority of inputs are non-zero. 
+    Non-binary inputs accepted. Binary output.
     >>> MJ_func([0,0])
     0
     >>> MJ_func([1,1])
