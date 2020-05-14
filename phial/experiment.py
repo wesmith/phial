@@ -15,16 +15,48 @@ import phial.node_functions as nf
 from phial.utils import tic,toc,Timer
 
 
+class AllPerms():  # modified from earlier AllPerms to remove redundant rows from LUT
+    # create a node set with all possible binary responses
+    def __init__(self, N, name=''):
+        # N is the number of inputs to the node
+        self.N = N
+        self.permutations = 2**(N+1)
 
-def gen_truth_funcs(map_node_argcnt): # DUMMY!!! @@@
+        self.indices = set([sum(k) for k in it.product([0,1], repeat=N)])  
+        self.name = name
+        LUT = []
+        for k in range(self.permutations):
+            nn = [int(i) for i in list('{0:016b}'.format(k))]
+            nn.reverse()
+            LUT.append([nn[k] for k in self.indices])
+        self.lut = np.array(LUT).T
+
+    def __call__(self, n):
+        # n is the node-function index
+        def node(inputs):
+            # inputs is a binary tuple of node inputs
+            if (len(inputs) != self.N):
+                txt = 'this function group requires a tuple with {} inputs: {} supplied'.\
+                format(self.N, len(inputs))
+                raise ValueError(txt)
+            return self.lut[sum(inputs), n]
+        return node
+
+
+def gen_truth_funcs(map_node_argcnt): 
     """map_node_argcnt: d[nodeLabel] = numArgs
     RETURN: d[nodeLabel] = [func1(inputs), func2(inputs), ... ]
     """
-    funcs = dict((k,[lambda inputs: inputs[0],
-                     lambda inputs: int(not(inputs[0]))])
-                 for k in map_node_argcnt.keys())
-    return funcs
+    objs = [AllPerms(k) for k in set(map_node_argcnt.values())]
     
+    funcs = dict()
+    for j in objs:
+        funcs[j.N] = [j(k) for k in range(j.permutations)]
+    out = dict()
+    for j, k in map_node_argcnt.items():
+        out[j] = funcs[k]
+
+    return out
 
 
 # nodes are extracted from edges.  This means an experiment cannot contain
