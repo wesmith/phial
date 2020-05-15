@@ -1,6 +1,3 @@
-"""To use the graph DRAW methods, you must have graphviz installed.
-https://www.graphviz.org/
-"""
 # Python standard library
 from collections import Counter, defaultdict
 import itertools
@@ -16,6 +13,7 @@ import numpy as np
 import pyphi
 import pyphi.network
 from pyphi.convert import sbn2sbs, sbs2sbn, to_2d
+from IPython.display import Image
 # Local packages
 import phial.node_functions as nf
 
@@ -42,6 +40,15 @@ def all_states(N, spn=2, backwards=False):
         states = sorted(states, key= lambda s: s[::-1])
     return states
 
+def dotgraph(G, pngfile):
+    """Return networkx DiGraph. Maybe write to PNG file."""
+    dotfile = pngfile + ".dot"
+    write_dot(G, dotfile)
+    cmd = (f'dot -Tpng -o{pngfile} {dotfile} ')
+    with open(pngfile,'w') as f:
+        subprocess.check_output(cmd, shell=True)
+    return Image(filename=pngfile)
+    
 # NB: This does NOT hold the state of a node.  That would increase load
 # on processing multiple states -- each with its own set of nodes!
 # Instead, a statestr contains states for all nodes a specific time.
@@ -56,7 +63,7 @@ class Node():
     """
     _id = 0
 
-    def __init__(self,label=None, num_states=2, id=None, func=nf.MJ_func):
+    def __init__(self,label=None, num_states=2, id=None, func='MJ'):
         if id is None:
             id = Node._id
             Node._id += 1
@@ -98,9 +105,17 @@ class Node():
 class Net():
     """Store everything needed to calculate phi.
     InstanceVars: graph, node_lut, tpm
+
+    :param edges: connectivity edges; e.g. [(0,1), (1,2), (2,0)]
+    :param tpm: default: use node funcs to calc
+    :param N: Number of nodes
+    :param SpN: States per Node
+    :param title: Label for connectivity graph
+    :param func: default function (mechanism) for all nodes
+
     """
 
-    nn = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+    _nn = list('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
     
     def __init__(self,
                  edges = None, # connectivity edges; e.g. [(0,1), (1,2), (2,0)]
@@ -109,7 +124,7 @@ class Net():
                  #graph = None, # networkx graph
                  SpN = 2,  # States per Node
                  title = None, # Label for graph
-                 func = nf.MJ_func, # default mechanism for all nodes
+                 func = 'MJ', # default mechanism for all nodes
                  ):
         G = nx.DiGraph()
         if edges is None:
@@ -121,7 +136,7 @@ class Net():
         edgesStrP = type(n_list[0]) == str
         if edgesStrP:
             n_list = [(ord(l) - ord('A')) for l in n_list]
-        nodes = [Node(id=i, label=Net.nn[i], num_states=SpN, func=func)
+        nodes = [Node(id=i, label=Net._nn[i], num_states=SpN, func=func)
                  for i in n_list]
 
         # lut[label] -> Node
@@ -147,14 +162,30 @@ class Net():
             
     @property
     def state_graph(self):
+        """Get the state-to-state graph labeled with states.
+
+        :returns: state-to-state graph
+        :rtype: networkx.DiGraph
+
+        """
         G = nx.DiGraph(sbn2sbs(self.tpm))
         mapping = dict(zip(range(len(self.tpm.index)), self.tpm.index))
         S = nx.relabel_nodes(G, mapping)
         return S
 
     def from_json(self, jsonstr,
-                  func = nf.MJ_func, # default mechanism for all nodes
+                  func = 'MJ', # default mechanism for all nodes
                   SpN=2):
+        """Overwrite contents of this Net with data from jsonstr.
+
+        :param jsonstr: JSON format of Net data
+        :param func: default node function to attach to all nodes in net.
+        :param SpN: default number of States per Node
+
+        :returns: TPM
+        :rtype: pandas.DataFrame
+
+        """
         self.graph = self.node_lut = self.tpm = None
         jdict = json.loads(jsonstr)
         edges = jdict.get('edges',[])
@@ -181,6 +212,13 @@ class Net():
         self.tpm = df
 
     def to_json(self, filename=None):
+        """Output contents of this Net in JSON format.
+
+        :param filename: where to write JSON (or do not write)
+        :returns: python dictionary matching the JSON
+        :rtype: dict
+
+        """
         S = self.state_graph
         jj = dict(
             edges=list(self.graph.edges),
@@ -197,6 +235,12 @@ class Net():
         return jj
 
     def info(self):
+        """Get information this Net
+
+        :returns: dict containing: edges,nodes, various counts
+        :rtype: dict
+
+        """
         dd = dict(
             edges=list(self.graph.edges),
             nodes=[str(n) for n in self.nodes],
@@ -209,13 +253,13 @@ class Net():
         
     @property
     def state_cc(self):
-        """Number of connected components in state to state graph."""
+        """Number of connected components in state-to-state graph (TPM)."""
         S = nx.DiGraph(sbn2sbs(self.tpm))
         return nx.number_weakly_connected_components(S)
 
     @property
     def state_cycles(self):
-        """Cycles found in state to state graph."""
+        """Cycles found in state-to-state graph. (TPM)"""
         S = nx.DiGraph(sbn2sbs(self.tpm))
         return nx.simple_cycles(S)
         
@@ -245,9 +289,15 @@ class Net():
         return [counts[i]/total for i in node.states]
 
     def calc_tpm(self):
-        """Iterate over all possible states(!!!) using node funcs
+        """Iterate over all possible input states. 
+
+        Use node funcs
         to calculate output state. State-to-State form. Allows non-binary.
         Does not save the resulting TPM.
+
+        :returns: system TPM
+        :rtype: pandas.DataFrame
+
         """
         backwards=True  # I dislike the order the papers use!
         allstates = list(itertools.product(*[n.states for n in self.nodes]))
@@ -277,20 +327,55 @@ class Net():
                    for i in range(self.tpm.shape[0]))
     @property
     def in_states(self):
+        """All possible states of the system.
+        Order matches what is commonly used in IIT papers. 
+        This is NOT lexicographical order.
+        A state is given as a string of hex digits ordered to match
+        the order of nodes in the Net.
+
+        :returns: list of hexstrings
+        :rtype: pandas.Index
+
+        """
         return self.tpm.index
+
+        """System states that are not reachable from any input states."""
 
     @property
     def unreachable_states(self):
-        """System states that are not reachable from any input states."""
+        """Input states that are not also output states.
+
+        :returns: list of hexstrings
+        :rtype: pandas.Index
+
+        """
         return sorted(set(self.in_states) - self.out_states)
         
 
     @property
     def cm(self):
+        """Get Connectivity Matrix
+        
+        see also: cm_df
+
+        :returns: CM in form suitable for pyphi.Network()
+        :rtype: numpy.array
+
+        """
         return nx.to_numpy_array(self.graph)
 
     @property
-    def df(self):
+    def cm_df(self):
+        """Get Connectivity Matrix (DataFrame)
+        
+        Labels rows and columns with node labels. 
+        See also: cm
+
+        :returns: CM in form that displays well in Notebook
+        :rtype: pandas.DataFrame
+
+        """
+
         return nx.to_pandas_adjacency(self.graph, nodelist=self.node_labels)
 
     @property
@@ -306,9 +391,24 @@ class Net():
         return list(self.graph.neighbors(node_label))
 
     def get_node(self, node_label):
+        """Get a Node by its label.
+
+        :param node_label: (str) Label (which shows in Draw) of node to retrieve 
+        :returns: instance of Node()
+        :rtype: Node
+
+        """
         return self.node_lut[node_label]
 
     def get_nodes(self, node_labels):
+        """Get list of Node instances by list of labels.
+
+        :param node_labels: (str) list of strings
+        :returns: list of Node() instances
+        :rtype: list
+
+        """
+
         return [self.node_lut[label] for label in node_labels]
     
     def __len__(self):
@@ -325,20 +425,35 @@ class Net():
                 subprocess.check_output(cmd, shell=True)
         return G
 
-
-
     def draw(self):
+        """Draw the node connectivity graph (in notebook).
+
+        In ipython, execute ``matplotlib.pyplot.show()`` to force display.
+
+        :returns: net graph
+        :rtype: nx.DiGraph
+
+        """
         nx.draw(self.graph,
                 pos=pydot_layout(self.graph),
                 # label='gnp_random_graph({N},{p})',
                 with_labels=True )
-        return self
+        return self.graph
 
     def draw_states(self):
+        """Draw state-to-state graph (in notebook).
+
+        In ipython, execute ``matplotlib.pyplot.show()`` to force display.
+
+        :returns: state graph
+        :rtype: nx.DiGraph
+
+        """
         G = nx.DiGraph(sbn2sbs(self.tpm))
         mapping = dict(zip(range(len(self.tpm.index)), self.tpm.index))
         S = nx.relabel_nodes(G, mapping)
-        nx.draw(S, pos=pydot_layout(S), with_labels=True )
+        nx.draw(S, pos=pydot_layout(S), with_labels=True)
+        return S
             
     @property
     def pyphi_network(self):

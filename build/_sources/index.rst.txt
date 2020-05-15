@@ -11,7 +11,8 @@ Welcome to phial's documentation!
    :caption: Contents:
 
    phial.rst
-   README.md
+   api.rst
+   readme_link
 
 
 Indices and tables

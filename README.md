@@ -1,8 +1,6 @@
-================================================================
-phial - A container for tools that support running ϕ experiments
-================================================================
-
-(Pronounced: /ˈfī(ə)l/)
+==================================================================
+phial - A container for tools that support running IIT experiments
+==================================================================
 
 This is a collection of tools to help use
 [pyphi](https://pyphi.readthedocs.io/en/latest/ "Calculator for Phi as
@@ -19,6 +17,8 @@ The **notebooks** directory contains
 
 The **examples** directory contains data files for experiments. These
 are data files that can be loaded into an Experiment.
+
+
 
 
 

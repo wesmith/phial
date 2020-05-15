@@ -146,6 +146,9 @@ node_functions = sorted(funcLUT.keys())
 # import phial.node_functions as nf
 # func_names = nf.node_functions
 
+def func_from_name(funcName):
+    return funcLUT[funcName]
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

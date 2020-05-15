@@ -31,7 +31,8 @@ release = '0.1.0'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc'
+    'sphinx.ext.autodoc',
+    'sphinxarg.ext',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -49,8 +50,13 @@ exclude_patterns = []
 # a list of builtin themes.
 
 #
-#!html_theme = 'alabaster'
-html_theme = 'nature'
+#!html_theme = 'alabaster' # very basic  
+# html_theme = 'nature'    # better
+html_theme = 'classic'     # like Python 2 doc https://docs.python.org/2/
+html_theme_options = {
+    "collapsiblesidebar": "true",
+}
+
 # Add any paths that contain custom themes here, relative to this
 # directory.
 # html_theme_path = ["_themes"] + [sphinx_rtd_theme.get_html_theme_path()]
