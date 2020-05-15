@@ -14,6 +14,7 @@ import numpy as np
 # Local packages
 import phial.toolbox as tb
 import phial.node_functions as nf
+import phial.gen_funcs as gf
 from phial.utils import tic,toc,Timer
 
 
@@ -90,26 +91,36 @@ class Experiment():
         for label,num in states.items():
             self.net.get_node(label).num_states = num
 
-    def generate_truth(self): 
-        f = gen_truth_funcs(dict((n.label,self.net.graph.predeecessors(n.label))
-                            for n in self.net.nodes))
-        self.node_func_list = f
+    def _make_func_lists(self):
+        nargs_set= set([len(list(self.net.graph.predecessors(n.label)))
+                        for n in self.net.nodes])
+        self.func_table = dict() # d[N] = [func1,func2, ..., func(4^N)]
+        for N in nargs_set:
+            self.func_table[N] = gf.gen_funcs(N)
 
-    def gen_tpm(self, node_func_map):
-        """node_func_map: d[nodeLabel] = funcIndex"""
-        for n in self.net.nodes:
-            funcidx = self.node_func_map[n.label]
-            funclist = self.node_func_map[n.label]
-            n.func = funclist[min(funcidx, len(funclist)-1)]
-        self.net.calc_tpm()
-        return self.net.tpm
-    
     @property
     def get_num_funcs(self):
-        return dict((n.label,len(self.node_func_map.get(n.label,[])))
-                    for n in self.net.nodes)
-        
+        """Experimenter uses this to get the count of functions available for
+        each node.  She uses the count in call to `gen_tpm` to assign 
+        one of the available functions to selected nodes.
+        """
+        self._make_func_lists()
+        nnf = dict() # dd[nodeLabel] => numberOfFuncs
+        for n in self.net.nodes:
+            nargs = len(list(self.net.graph.predecessors(n.label)))
+            nnf[n.label] = len(self.func_table[nargs])
+        return nnf
 
+    def gen_tpm(self, node_func_idx):
+        """Assign funcs to nodes, then create system TPM.
+        node_func_idx:: d[nodeLabel] = funcIndex"""
+        for label,idx in node_func_idx.items():
+            N = len(list(self.net.graph.predecessors(label)))
+            funcidx = node_func_idx[label]
+            self.net.get_node(label).func = self.func_table[N][funcidx]
+        self.net.tpm = self.net.calc_tpm()
+        return self.net.tpm
+    
     def info(self):
         dd = dict(
             timestamp = str(self.starttime),

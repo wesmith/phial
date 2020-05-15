@@ -24,9 +24,10 @@ def gen_funcs(N):
 
     >>> len(gen_funcs(2))
     16
-    >>> gen_funcs(2)[8].true_states  # XOR
+    >>> f8 = gen_funcs(2)[8]
+    >>> f8.true_states       # XOR
     ((0, 1), (1, 0))
-    >>> gen_funcs(2)[8]([1,0])         # run XOR
+    >>> f8([1,0])            # run XOR
     1
     """
     return [func_from_true_states(true_states, N=N)

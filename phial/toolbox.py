@@ -231,7 +231,7 @@ class Net():
         preds_id = set([self.get_node(l).id
                     for l in set(self.graph.predecessors(node.label))])
         args = [system_state_tup[i] for i in preds_id]
-        return node.func(args)
+        return node.func(args) # args are in node order
         
 
     def node_pd(self, node):
@@ -244,8 +244,10 @@ class Net():
 
     def calc_tpm(self):
         """Iterate over all possible states(!!!) using node funcs
-        to calculate output state. State-to-State form. Allows non-binary"""
-        backwards=True  # I hate the order the papers use!!
+        to calculate output state. State-to-State form. Allows non-binary.
+        Does not save the resulting TPM.
+        """
+        backwards=True  # I dislike the order the papers use!
         allstates = list(itertools.product(*[n.states for n in self.nodes]))
         N = len(self.nodes)
         allstatesstr = [''.join([f'{s:x}' for s in sv]) for sv in allstates]
