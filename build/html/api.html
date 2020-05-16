@@ -1,0 +1,659 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>API &#8212; phial 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    
+    <script src="_static/sidebar.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="phial - A container for tools that support running IIT experiments" href="readme_link.html" />
+    <link rel="prev" title="About Phial" href="phial.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="readme_link.html" title="phial - A container for tools that support running IIT experiments"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="phial.html" title="About Phial"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">phial 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="api">
+<h1>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="experiment">
+<h2>Experiment<a class="headerlink" href="#experiment" title="Permalink to this headline">¶</a></h2>
+<p>In addition to the API functionality, the experiment module provides a
+python script.  Run it with: <code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">experiment.py</span></code>.
+See <a class="reference internal" href="#experiment-cmd-line"><span class="std std-ref">Running an experiment from the command line</span></a></p>
+<span class="target" id="module-experiment"></span><p><strong>NB:</strong> To use the graph DRAW methods, you must have graphviz installed.
+<a class="reference external" href="https://www.graphviz.org/">https://www.graphviz.org/</a></p>
+<dl class="py class">
+<dt id="experiment.Experiment">
+<em class="property">class </em><code class="sig-prename descclassname">experiment.</code><code class="sig-name descname">Experiment</code><span class="sig-paren">(</span><em class="sig-param">edges</em>, <em class="sig-param">title=''</em>, <em class="sig-param">comment=None</em>, <em class="sig-param">funcs={}</em>, <em class="sig-param">states={}</em>, <em class="sig-param">net=None</em>, <em class="sig-param">saveDir=PosixPath('/home/pothiers/phial')</em>, <em class="sig-param">default_statesPerNode=2</em>, <em class="sig-param">default_func=&lt;function MJ_func&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup, run, analyze IIT experiments.</p>
+<p>Nodes not given as keys to funcs dict default to ‘default_func’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edges</strong> – connectivity edges; e.g. [(0,1), (1,2), (2,0)]</p></li>
+<li><p><strong>title</strong> – Label for experiment</p></li>
+<li><p><strong>comment</strong> – Additional reports associated with experiment</p></li>
+<li><p><strong>funcs</strong> – dict[nodeLabel] = func; func can be python function or 
+a stripped name from library (node_functions.py) e.g. ‘XOR’.</p></li>
+<li><p><strong>states</strong> – dict[nodeLabel] = numStatesForNode</p></li>
+<li><p><strong>net</strong> – Net instance that defines network used for experiment</p></li>
+<li><p><strong>saveDir</strong> – directory to save experiment results into.</p></li>
+<li><p><strong>default_statesPerNode</strong> – default number of States per Node</p></li>
+<li><p><strong>default_func</strong> – default function (mechanism) for all nodes</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="experiment.Experiment.analyze">
+<code class="sig-name descname">analyze</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">figsize</span><span class="o">=</span><span class="default_value">14, 4</span></em>, <em class="sig-param"><span class="n">countUnreachable</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.analyze" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyze and plot results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>figsize</strong> – (width,height) of plot</p></li>
+<li><p><strong>countUnreachable</strong> – Histogram includes in-states that fail phi-calc</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.gen_tpm">
+<code class="sig-name descname">gen_tpm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_func_idx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.gen_tpm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign funcs to nodes, then (re)create system TPM.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">get_num_funcs</span></code> to find the how many functions are available for 
+each node. (the max idx is count-1)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>node_func_idx</strong> – d[nodeLabel] = funcIndex</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tpm</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.get_num_funcs">
+<em class="property">property </em><code class="sig-name descname">get_num_funcs</code><a class="headerlink" href="#experiment.Experiment.get_num_funcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Experimenter uses this to get the count of functions available for
+each node.  She uses the count in call to <code class="docutils literal notranslate"><span class="pre">gen_tpm</span></code> to assign 
+one of the available functions to selected nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict[nodeLabel] =&gt; numFuncs</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.info">
+<code class="sig-name descname">info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Info about network and  results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict with keys: timestamp, duration, results, uname</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">save</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate big-phi for all reachable states over network defined 
+in this instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>verbose</strong> – Runtime info on what is being done</p></li>
+<li><p><strong>plot</strong> – Plots analysis of results</p></li>
+<li><p><strong>save</strong> – if True save experiment to auto-generated name. If str, save to that basename in <cite>saveDir</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>info about results</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="experiment.Experiment.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#experiment.Experiment.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save experiment setup and results to file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> – Save here. If not given, invent one that includes a date-time stamp in the name</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="running-an-experiment-from-the-command-line">
+<span id="experiment-cmd-line"></span><h3>Running an experiment from the command line<a class="headerlink" href="#running-an-experiment-from-the-command-line" title="Permalink to this headline">¶</a></h3>
+<p><p>Run an IIT experiment</p>
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">experiment</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">default_func</span> <span class="n">DEFAULT_FUNC</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">SpN</span> <span class="n">SPN</span><span class="p">]</span>
+                  <span class="p">[</span><span class="o">--</span><span class="n">outfile</span> <span class="n">OUTFILE</span><span class="p">]</span>
+                  <span class="p">[</span><span class="o">--</span><span class="n">loglevel</span> <span class="p">{</span><span class="n">CRTICAL</span><span class="p">,</span><span class="n">ERROR</span><span class="p">,</span><span class="n">WARNING</span><span class="p">,</span><span class="n">INFO</span><span class="p">,</span><span class="n">DEBUG</span><span class="p">}]</span>
+                  <span class="n">net</span>
+</pre></div>
+</div>
+<div class="section" id="Positional Arguments">
+<h4>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h4>
+<dl class="option-list">
+<dt><kbd>net</kbd></dt>
+<dd><p>Net definition in JSON format containing at least “edges” key. Optional keys: “funcs”, “title”</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="Named Arguments">
+<h4>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h4>
+<dl class="option-list">
+<dt><kbd>--default_func</kbd></dt>
+<dd><p>Default function when not explicitly specified for a node.</p>
+<p>Default: “XOR”</p>
+</dd>
+<dt><kbd>--SpN</kbd></dt>
+<dd><p>Default number of states per node when not explicitly specified for a node.</p>
+<p>Default: 2</p>
+</dd>
+<dt><kbd>--outfile</kbd></dt>
+<dd><p>File to save experiment into</p>
+</dd>
+<dt><kbd>--loglevel</kbd></dt>
+<dd><p>Possible choices: CRTICAL, ERROR, WARNING, INFO, DEBUG</p>
+<p>Kind of diagnostic output</p>
+<p>Default: “WARNING”</p>
+</dd>
+</dl>
+</div>
+<p><p>EXAMPLE: /home/pothiers/sandbox/phial/venv/bin/sphinx-build my_network.json”</p>
+</p>
+</div>
+</div>
+<div class="section" id="module-toolbox">
+<span id="toolbox"></span><h2>Toolbox<a class="headerlink" href="#module-toolbox" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="toolbox.Net">
+<em class="property">class </em><code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">Net</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">edges</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tpm</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">N</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">SpN</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">func</span><span class="o">=</span><span class="default_value">'MJ'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store everything needed to calculate phi.
+InstanceVars: graph, node_lut, tpm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>edges</strong> – connectivity edges; e.g. [(0,1), (1,2), (2,0)]</p></li>
+<li><p><strong>tpm</strong> – default: use node funcs to calc</p></li>
+<li><p><strong>N</strong> – Number of nodes</p></li>
+<li><p><strong>SpN</strong> – States per Node</p></li>
+<li><p><strong>title</strong> – Label for connectivity graph</p></li>
+<li><p><strong>func</strong> – default function (mechanism) for all nodes</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="toolbox.Net.calc_tpm">
+<code class="sig-name descname">calc_tpm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.calc_tpm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over all possible input states.</p>
+<p>Use node funcs
+to calculate output state. State-to-State form. Allows non-binary.
+Does not save the resulting TPM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>system TPM</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.cm">
+<em class="property">property </em><code class="sig-name descname">cm</code><a class="headerlink" href="#toolbox.Net.cm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Connectivity Matrix</p>
+<p>see also: cm_df</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>CM in form suitable for pyphi.Network()</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.cm_df">
+<em class="property">property </em><code class="sig-name descname">cm_df</code><a class="headerlink" href="#toolbox.Net.cm_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Connectivity Matrix (DataFrame)</p>
+<p>Labels rows and columns with node labels. 
+See also: cm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>CM in form that displays well in Notebook</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.draw">
+<code class="sig-name descname">draw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw the node connectivity graph (in notebook).</p>
+<p>In ipython, execute <code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot.show()</span></code> to force display.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>net graph</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>nx.DiGraph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.draw_states">
+<code class="sig-name descname">draw_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.draw_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw state-to-state graph (in notebook).</p>
+<p>In ipython, execute <code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot.show()</span></code> to force display.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>state graph</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>nx.DiGraph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.from_json">
+<code class="sig-name descname">from_json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">jsonstr</span></em>, <em class="sig-param"><span class="n">func</span><span class="o">=</span><span class="default_value">'MJ'</span></em>, <em class="sig-param"><span class="n">SpN</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overwrite contents of this Net with data from jsonstr.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>jsonstr</strong> – JSON format of Net data</p></li>
+<li><p><strong>func</strong> – default node function to attach to all nodes in net.</p></li>
+<li><p><strong>SpN</strong> – default number of States per Node</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>TPM</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.get_node">
+<code class="sig-name descname">get_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_label</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.get_node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Node by its label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>node_label</strong> – (str) Label (which shows in Draw) of node to retrieve</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>instance of Node()</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#toolbox.Node" title="toolbox.Node">Node</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.get_nodes">
+<code class="sig-name descname">get_nodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node_labels</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.get_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get list of Node instances by list of labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>node_labels</strong> – (str) list of strings</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of Node() instances</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.gvgraph">
+<code class="sig-name descname">gvgraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pngfile</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.gvgraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return networkx DiGraph. Maybe write to PNG file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.in_states">
+<em class="property">property </em><code class="sig-name descname">in_states</code><a class="headerlink" href="#toolbox.Net.in_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>All possible states of the system.
+Order matches what is commonly used in IIT papers. 
+This is NOT lexicographical order.
+A state is given as a string of hex digits ordered to match
+the order of nodes in the Net.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of hexstrings</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.Index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.info">
+<code class="sig-name descname">info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information this Net</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict containing: edges,nodes, various counts</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.node_labels">
+<em class="property">property </em><code class="sig-name descname">node_labels</code><a class="headerlink" href="#toolbox.Net.node_labels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.node_state_counts">
+<code class="sig-name descname">node_state_counts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.node_state_counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Truth table of node.func run over all possible inputs.
+Inputs are predecessor nodes with all possible states.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.nodes">
+<em class="property">property </em><code class="sig-name descname">nodes</code><a class="headerlink" href="#toolbox.Net.nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of all nodes in ID order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.out_states">
+<em class="property">property </em><code class="sig-name descname">out_states</code><a class="headerlink" href="#toolbox.Net.out_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output states of TPM in hexstr form. These are the states allowed
+for the ‘statestr’ phi method.
+Otherwise the error ‘cannot be reached in the given TPM’ is thrown.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.phi">
+<code class="sig-name descname">phi</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">statestr</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.phi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate phi for net.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.pyphi_network">
+<em class="property">property </em><code class="sig-name descname">pyphi_network</code><a class="headerlink" href="#toolbox.Net.pyphi_network" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return pyphi Network() instance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.state_cc">
+<em class="property">property </em><code class="sig-name descname">state_cc</code><a class="headerlink" href="#toolbox.Net.state_cc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of connected components in state-to-state graph (TPM).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.state_cycles">
+<em class="property">property </em><code class="sig-name descname">state_cycles</code><a class="headerlink" href="#toolbox.Net.state_cycles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cycles found in state-to-state graph. (TPM)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.state_graph">
+<em class="property">property </em><code class="sig-name descname">state_graph</code><a class="headerlink" href="#toolbox.Net.state_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the state-to-state graph labeled with states.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>state-to-state graph</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>networkx.DiGraph</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.to_json">
+<code class="sig-name descname">to_json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Net.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Output contents of this Net in JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> – where to write JSON (or do not write)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>python dictionary matching the JSON</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Net.unreachable_states">
+<em class="property">property </em><code class="sig-name descname">unreachable_states</code><a class="headerlink" href="#toolbox.Net.unreachable_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Input states that are not also output states.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of hexstrings</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>pandas.Index</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="toolbox.Node">
+<em class="property">class </em><code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">Node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_states</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">id</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">func</span><span class="o">=</span><span class="default_value">'MJ'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Node" title="Permalink to this definition">¶</a></dt>
+<dd><p>Node in network. Supports more than just two states but downstream 
+software may be built for only binary nodes. Auto increment node id that 
+will be used as label if one isn’t provided on creation.</p>
+<dl class="py method">
+<dt id="toolbox.Node.random_state">
+<em class="property">property </em><code class="sig-name descname">random_state</code><a class="headerlink" href="#toolbox.Node.random_state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Node.states">
+<em class="property">property </em><code class="sig-name descname">states</code><a class="headerlink" href="#toolbox.Node.states" title="Permalink to this definition">¶</a></dt>
+<dd><p>States supported by this node.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="toolbox.Node.truth_table">
+<code class="sig-name descname">truth_table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">max_inputs</span><span class="o">=</span><span class="default_value">4</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.Node.truth_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Full truth table for function associated with Node. Inputs consist
+of all possible lists of binary values up to length ‘max_inputs’.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.all_states">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">all_states</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em>, <em class="sig-param"><span class="n">spn</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">backwards</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.all_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>All combinations spn^N binary states in lexigraphical order.
+This is NOT the order used in most IIT papers.  
+To get order for papers, set ‘backwards=True’.
+RETURN list of statestr in hex format. e.g. ‘01100’
+spn:: States Per Node</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.dotgraph">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">dotgraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G</span></em>, <em class="sig-param"><span class="n">pngfile</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.dotgraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return networkx DiGraph. Maybe write to PNG file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.nodes_state">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">nodes_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em>, <em class="sig-param"><span class="n">nodelabels</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.nodes_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert system state (statehexstr) to dict[nodeLabel]=nodeState</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.phi_all_states">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">phi_all_states</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">net</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.phi_all_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run pyphi.compute.phi over all reachable states in net.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.pyphi_network_to_net">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">pyphi_network_to_net</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">network</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.pyphi_network_to_net" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load pyphi network into this instance (overwrite existing data).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="toolbox.system_state">
+<code class="sig-prename descclassname">toolbox.</code><code class="sig-name descname">system_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nodes_state</span></em><span class="sig-paren">)</span><a class="headerlink" href="#toolbox.system_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert nodes_state (dict[label]=state) to statehexstr</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">API</a><ul>
+<li><a class="reference internal" href="#experiment">Experiment</a><ul>
+<li><a class="reference internal" href="#running-an-experiment-from-the-command-line">Running an experiment from the command line</a><ul>
+<li><a class="reference internal" href="#Positional Arguments">Positional Arguments</a></li>
+<li><a class="reference internal" href="#Named Arguments">Named Arguments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-toolbox">Toolbox</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="phial.html"
+                        title="previous chapter">About Phial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="readme_link.html"
+                        title="next chapter">phial - A container for tools that support running IIT experiments</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="readme_link.html" title="phial - A container for tools that support running IIT experiments"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="phial.html" title="About Phial"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">phial 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, S.Pothier.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

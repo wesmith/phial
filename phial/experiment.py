@@ -1,11 +1,15 @@
 #! /usr/bin/env python
+"""**NB:** To use the graph DRAW methods, you must have graphviz installed.
+https://www.graphviz.org/"""
 # Python standard library
 import sys
 import argparse
 import logging
-from datetime import datetime
+from datetime import datetime,date
 import json
 import platform
+from pprint import pprint
+from pathlib import Path
 # External packages
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,66 +22,40 @@ import phial.gen_funcs as gf
 from phial.utils import tic,toc,Timer
 
 
-class AllPerms():  # modified from earlier AllPerms to remove redundant rows from LUT
-    # create a node set with all possible binary responses
-    def __init__(self, N, name=''):
-        # N is the number of inputs to the node
-        self.N = N
-        self.permutations = 2**(N+1)
-
-        self.indices = set([sum(k) for k in it.product([0,1], repeat=N)])  
-        self.name = name
-        LUT = []
-        for k in range(self.permutations):
-            nn = [int(i) for i in list('{0:016b}'.format(k))]
-            nn.reverse()
-            LUT.append([nn[k] for k in self.indices])
-        self.lut = np.array(LUT).T
-
-    def __call__(self, n):
-        # n is the node-function index
-        def node(inputs):
-            # inputs is a binary tuple of node inputs
-            if (len(inputs) != self.N):
-                txt = 'this function group requires a tuple with {} inputs: {} supplied'.\
-                format(self.N, len(inputs))
-                raise ValueError(txt)
-            return self.lut[sum(inputs), n]
-        return node
-
-
-def gen_truth_funcs(map_node_argcnt): 
-    """map_node_argcnt: d[nodeLabel] = numArgs
-    RETURN: d[nodeLabel] = [func1(inputs), func2(inputs), ... ]
-    """
-    objs = [AllPerms(k) for k in set(map_node_argcnt.values())]
-    
-    funcs = dict()
-    for j in objs:
-        funcs[j.N] = [j(k) for k in range(j.permutations)]
-    out = dict()
-    for j, k in map_node_argcnt.items():
-        out[j] = funcs[k]
-
-    return out
-
-
 # nodes are extracted from edges.  This means an experiment cannot contain
 # a node that has no edges. (self edge is ok)
 class Experiment():
+    """Setup, run, analyze IIT experiments.
+
+    Nodes not given as keys to funcs dict default to 'default_func'
+    
+    :param edges: connectivity edges; e.g. [(0,1), (1,2), (2,0)]
+    :param title: Label for experiment
+    :param comment: Additional reports associated with experiment
+
+    :param funcs: dict[nodeLabel] = func; func can be python function or 
+        a stripped name from library (node_functions.py) e.g. 'XOR'.
+    :param states: dict[nodeLabel] = numStatesForNode
+    :param net: Net instance that defines network used for experiment
+    :param saveDir: directory to save experiment results into.
+    :param default_statesPerNode: default number of States per Node
+    :param default_func: default function (mechanism) for all nodes
+    """
+
     def __init__(self, edges,
                  title='',
                  comment=None,
                  funcs={}, # dict[nodeLabel] = func
                  states={}, # dict[nodeLabel] = numStates
                  net = None,
+                 saveDir = Path.home() / 'phial',
                  default_statesPerNode=2,
                  default_func=nf.MJ_func):
-        """Nodes not given as keys to funcs dict default to 'default_func'"""
         self.results = {}
         self.filename = None
         self.starttime = None
         self.elapsed = None
+        self.saveDir = Path(saveDir).expanduser()
 
         if net is not None:
             self.net = net
@@ -87,6 +65,8 @@ class Experiment():
                               func=default_func)
         self.title = title
         for label,func in funcs.items():
+            if type(func) == str:
+                func = nf.func_from_name(func)
             self.net.get_node(label).func = func
         for label,num in states.items():
             self.net.get_node(label).num_states = num
@@ -101,8 +81,12 @@ class Experiment():
     @property
     def get_num_funcs(self):
         """Experimenter uses this to get the count of functions available for
-        each node.  She uses the count in call to `gen_tpm` to assign 
+        each node.  She uses the count in call to ``gen_tpm`` to assign 
         one of the available functions to selected nodes.
+
+        :returns: dict[nodeLabel] => numFuncs
+        :rtype: dict
+
         """
         self._make_func_lists()
         nnf = dict() # dd[nodeLabel] => numberOfFuncs
@@ -112,8 +96,16 @@ class Experiment():
         return nnf
 
     def gen_tpm(self, node_func_idx):
-        """Assign funcs to nodes, then create system TPM.
-        node_func_idx:: d[nodeLabel] = funcIndex"""
+        """Assign funcs to nodes, then (re)create system TPM.
+
+        Use ``get_num_funcs`` to find the how many functions are available for 
+        each node. (the max idx is count-1)
+
+        :param node_func_idx: d[nodeLabel] = funcIndex
+        :returns: tpm
+        :rtype: pandas.DataFrame
+
+        """
         for label,idx in node_func_idx.items():
             N = len(list(self.net.graph.predecessors(label)))
             funcidx = node_func_idx[label]
@@ -122,17 +114,34 @@ class Experiment():
         return self.net.tpm
     
     def info(self):
+        """Info about network and  results.
+
+        :returns: dict with keys: timestamp, duration, results, uname
+        :rtype: dict
+        """
         dd = dict(
             timestamp = str(self.starttime),
             duration = self.elapsed, # seconds
             results = self.results,
+            connected_components = self.net.state_cc,
+            cycles = len(list(self.net.state_cycles)),
             filename = self.filename,
             uname = platform.uname(),
         )
-
         return dd
         
-    def run(self, verbose=False, plot=False, **kwargs):
+
+    def run(self, verbose=False, plot=False, save=True, **kwargs):
+        """Calculate big-phi for all reachable states over network defined 
+        in this instance.
+
+        :param verbose: Runtime info on what is being done
+        :param plot: Plots analysis of results
+        :param save: if True save experiment to auto-generated name. If str, save to that basename in `saveDir`
+        :returns: info about results
+        :rtype: dict
+
+        """
         timer0 = Timer()
         timer1 = Timer()
         timer0.tic # start tracking time
@@ -149,8 +158,42 @@ class Experiment():
         self.elapsed = timer0.toc  # Seconds since start
         if plot:
             self.analyze(**kwargs)
+        if save:
+            if type(save) == str:
+                self.save(self.saveDir/f'{save}.json')
+            else:
+                self.save()
+        return self.info()
 
+    def save(self, filename=None):
+        """Save experiment setup and results to file.
+
+        :param filename: Save here. If not given, invent one that includes a date-time stamp in the name
+        :returns: 
+        :rtype: 
+
+        """
+        #now=datetime.now().isoformat(timespec='seconds')
+        now=datetime.now().isoformat()
+        fname = filename or self.saveDir/f'results_{now}.json'
+
+        out = dict(net=self.net.to_json(),
+                   results=self.info() )
+        with open(fname, 'w') as f:
+            #!json.dump(out, indent=2, fp=f)
+            json.dump(out, fp=f)
+        print(f'Saved experiment with results to: {fname}')
+        return fname
+    
     def analyze(self, figsize=(14,4), countUnreachable=False):
+        """Analyze and plot results.
+
+        :param figsize: (width,height) of plot
+        :param countUnreachable: Histogram includes in-states that fail phi-calc
+        :returns: None
+        :rtype: None
+
+        """
         dd = dict((s,v['phi']) for s,v in self.results.items())
         if countUnreachable:
             dd.update(dict((s,-1) for s in self.net.unreachable_states))
@@ -164,13 +207,12 @@ class Experiment():
         fig.suptitle(self.title)
         
 ##############################################################################
-
-def main():
-    #print('EXECUTING: {}\n\n'.format(' '.join(sys.argv)))
+def my_parser():
+    prog = sys.argv[0]
     parser = argparse.ArgumentParser(
         #!version='1.0.1',
-        description='My shiny new python program',
-        epilog='EXAMPLE: %(prog)s a b"'
+        description='Run an IIT experiment',
+        epilog=f'EXAMPLE: {prog} my_network.json"'
         )
     dflt_func = 'XOR'
     dflt_spn = 2
@@ -192,6 +234,11 @@ def main():
                         choices = ['CRTICAL','ERROR','WARNING','INFO','DEBUG'],
                         default='WARNING',
                         )
+    return parser
+    
+def main():
+    #print('EXECUTING: {}\n\n'.format(' '.join(sys.argv)))
+    parser = my_parser()
     args = parser.parse_args()
     log_level = getattr(logging, args.loglevel.upper(), None)
     if not isinstance(log_level, int):

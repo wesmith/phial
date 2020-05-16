@@ -15,7 +15,6 @@ def func_from_true_states(true_states, N=999):
     binary_func.true_states = true_states # info only
     return binary_func
 
-
 def gen_funcs(N):
     """Generate all possible 4^N binary functions of N binary inputs.
     Num in-states = 2^N.
